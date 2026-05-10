@@ -1178,25 +1178,22 @@ function renderCombos(){
 
 function renderComboCard(c){
   const tableId = 'bt-' + c.id;
-  const comboCn = comboNameCn[c.name] || '';
-  const commenceCn = translateCommence(c.commence);
   const blLinks = renderBlLinks(c.id);
   const hasBeatData = c.rows.length > 0 && c.rows[0][1] !== '(见视频)';
   return `
   <div class="combo-card">
     <h3>
-      ${c.id}: ${c.name}${comboCn ? ' <small style="font-weight:400;color:#888">('+comboCn+')</small>' : ''}
+      ${c.id}: ${c.name}
       <span class="beat-speak" onclick="event.stopPropagation();speakFrench('${escapeHtml(c.name)}', this, 0.75)" title="朗读组合名">🔊</span>
     </h3>
     <div class="combo-meta">
-      <strong>开始姿势：</strong>${c.commence}
-      <span class="beat-speak" onclick="event.stopPropagation();smartSpeak('${escapeHtml(c.commence)}', this)" title="朗读开始姿势">🔊</span>
-      <span style="color:#888;font-size:0.78rem;margin-left:4px;">${commenceCn}</span><br>
-      <strong>前奏：</strong>${c.intro} &nbsp;|&nbsp; <strong>表演：</strong>${c.perform}
+      <strong>Commence：</strong>${c.commence}
+      <span class="beat-speak" onclick="event.stopPropagation();smartSpeak('${escapeHtml(c.commence)}', this)" title="朗读开始姿势">🔊</span><br>
+      <strong>Introduction：</strong>${c.intro} &nbsp;|&nbsp; <strong>Perform：</strong>${c.perform}
     </div>
     ${hasBeatData ? `
     <button class="beat-toggle" onclick="toggleSection('${tableId}')">
-      📋 节拍分解表 <span class="arrow2">▼</span>
+      📋 Beat Breakdown <span class="arrow2">▼</span>
     </button>
     <div class="beat-table-wrap collapsed" id="${tableId}">
       <div style="overflow-x:auto;">
@@ -1204,13 +1201,11 @@ function renderComboCard(c){
         <thead><tr><th>Counts</th><th>Legs & Body</th><th>Arms & Head</th></tr></thead>
         <tbody>
           ${c.rows.map(r => {
-            const legsHint = addCnHints(r[1]);
-            const armsHint = addCnHints(r[2]);
             return `
             <tr>
               <td class="counts">${r[0]}</td>
-              <td>${cellWithSpeaker(r[1])}${legsHint}</td>
-              <td>${cellWithSpeaker(r[2])}${armsHint}</td>
+              <td>${cellWithSpeaker(r[1])}</td>
+              <td>${cellWithSpeaker(r[2])}</td>
             </tr>`;
           }).join('')}
         </tbody>
@@ -1219,9 +1214,7 @@ function renderComboCard(c){
     </div>
     ` : '<p style="color:#888;font-size:0.82rem;margin:8px 0;">节拍分解待补充，请查看视频学习</p>'}
     <div class="video-links">
-      ${blLinks ? blLinks : `
-      <a class="bl-btn" href="https://search.bilibili.com/all?keyword=${encodeURIComponent('英皇芭蕾 Grade 3 ' + c.name)}" target="_blank" rel="noopener">📺 B站</a>
-      `}
+      ${blLinks ? blLinks : ''}
       <a class="yt-btn" href="https://www.youtube.com/results?search_query=${encodeURIComponent('RAD Grade 3 ' + c.name)}" target="_blank" rel="noopener">🎬 YouTube</a>
     </div>
   </div>`;
