@@ -582,6 +582,15 @@ const combosCentre = [
     video:"RAD Grade 3 Ronds de jambe à terre"
   },
   {
+    id:"C8",name:"Transfer of weight",
+    commence:"Upstage centre, 1st position, Bras bas",
+    intro:"4 counts",perform:"All together",
+    rows:[
+      ["(见视频)","",""],
+    ],
+    video:"RAD Grade 3 Transfer of weight"
+  },
+  {
     id:"C9",name:"Adage",
     commence:"Upstage centre, facing 6, Classical pose right foot derrière, Bras bas",
     intro:"4 counts",perform:"Two at a time",
@@ -646,6 +655,15 @@ const combosCentre = [
       ["(End)","Straighten legs","Bras bas"],
     ],
     video:"RAD Grade 3 Glissades assemblés"
+  },
+  {
+    id:"C12",name:"Posés and temps levés",
+    commence:"Centre, 3rd position either foot devant, Bras bas",
+    intro:"4 counts",perform:"One at a time",
+    rows:[
+      ["(见视频)","",""],
+    ],
+    video:"RAD Grade 3 Posés temps levés"
   },
   {
     id:"C13",name:"Turns",
@@ -719,6 +737,55 @@ const combosCentre = [
       ["7-8","Free ending","—"],
     ],
     video:"RAD Grade 3 Dance A"
+  },
+  {
+    id:"DanceB",name:"Dance B — male",
+    commence:"Centre, Classical pose, Bras bas",
+    intro:"8 counts",perform:"One at a time",
+    rows:[["(见视频)","",""]],
+    video:"RAD Grade 3 Dance B male"
+  },
+  {
+    id:"DanceC",name:"Dance C — female",
+    commence:"Centre, Classical pose, Bras bas",
+    intro:"8 counts",perform:"One at a time",
+    rows:[["(见视频)","",""]],
+    video:"RAD Grade 3 Dance C female"
+  },
+  {
+    id:"DanceDf",name:"Dance D — female",
+    commence:"Centre, Classical pose, Bras bas",
+    intro:"8 counts",perform:"One at a time",
+    rows:[["(见视频)","",""]],
+    video:"RAD Grade 3 Dance D female"
+  },
+  {
+    id:"DanceDm",name:"Dance D — male",
+    commence:"Centre, Classical pose, Bras bas",
+    intro:"8 counts",perform:"One at a time",
+    rows:[["(见视频)","",""]],
+    video:"RAD Grade 3 Dance D male"
+  },
+  {
+    id:"DanceEf",name:"Dance E — female",
+    commence:"Centre, Classical pose, Bras bas",
+    intro:"8 counts",perform:"One at a time",
+    rows:[["(见视频)","",""]],
+    video:"RAD Grade 3 Dance E female"
+  },
+  {
+    id:"DanceEm",name:"Dance E — male",
+    commence:"Centre, Classical pose, Bras bas",
+    intro:"8 counts",perform:"One at a time",
+    rows:[["(见视频)","",""]],
+    video:"RAD Grade 3 Dance E male"
+  },
+  {
+    id:"Reverence",name:"Révérence",
+    commence:"Centre, Bras bas",
+    intro:"4 counts",perform:"All together",
+    rows:[["(见视频)","",""]],
+    video:"RAD Grade 3 Révérence"
   },
 ];
 
@@ -1113,6 +1180,8 @@ function renderComboCard(c){
   const tableId = 'bt-' + c.id;
   const comboCn = comboNameCn[c.name] || '';
   const commenceCn = translateCommence(c.commence);
+  const blLinks = renderBlLinks(c.id);
+  const hasBeatData = c.rows.length > 0 && c.rows[0][1] !== '(见视频)';
   return `
   <div class="combo-card">
     <h3>
@@ -1125,6 +1194,7 @@ function renderComboCard(c){
       <span style="color:#888;font-size:0.78rem;margin-left:4px;">${commenceCn}</span><br>
       <strong>前奏：</strong>${c.intro} &nbsp;|&nbsp; <strong>表演：</strong>${c.perform}
     </div>
+    ${hasBeatData ? `
     <button class="beat-toggle" onclick="toggleSection('${tableId}')">
       📋 节拍分解表 <span class="arrow2">▼</span>
     </button>
@@ -1147,13 +1217,12 @@ function renderComboCard(c){
       </table>
       </div>
     </div>
+    ` : '<p style="color:#888;font-size:0.82rem;margin:8px 0;">节拍分解待补充，请查看视频学习</p>'}
     <div class="video-links">
-      <a class="bl-btn" href="https://search.bilibili.com/all?keyword=${encodeURIComponent('英皇芭蕾 Grade 3 ' + c.name)}" target="_blank" rel="noopener">
-        📺 B站
-      </a>
-      <a class="yt-btn" href="https://www.youtube.com/results?search_query=${encodeURIComponent('RAD Grade 3 ' + c.name)}" target="_blank" rel="noopener">
-        🎬 YouTube
-      </a>
+      ${blLinks ? blLinks : `
+      <a class="bl-btn" href="https://search.bilibili.com/all?keyword=${encodeURIComponent('英皇芭蕾 Grade 3 ' + c.name)}" target="_blank" rel="noopener">📺 B站</a>
+      `}
+      <a class="yt-btn" href="https://www.youtube.com/results?search_query=${encodeURIComponent('RAD Grade 3 ' + c.name)}" target="_blank" rel="noopener">🎬 YouTube</a>
     </div>
   </div>`;
 }
@@ -1263,13 +1332,60 @@ const comboNameCn = {
   'Grands battements to second and derrière':'向旁向后大踢腿',
   'Port de bras':'手臂运行',
   'Ronds de jambe à terre':'地面划圈',
+  'Transfer of weight':'重心转移',
   'Adage':'慢板控制',
   'Sautés and changements':'小跳与换脚跳',
   'Glissades, sissonnes and assemblés':'滑步、分腿跳与集中跳',
+  'Posés and temps levés':'上步单腿跳',
   'Turns':'旋转',
   'Grand allegro':'大跳',
   'Dance A — female':'舞蹈A — 女',
+  'Dance B — male':'舞蹈B — 男',
+  'Dance C — female':'舞蹈C — 女',
+  'Dance D — female':'舞蹈D — 女',
+  'Dance D — male':'舞蹈D — 男',
+  'Dance E — female':'舞蹈E — 女',
+  'Dance E — male':'舞蹈E — 男',
+  'Révérence':'行礼',
 };
+
+// ===== Bilibili video mapping: each combo's matching p numbers =====
+const BL_BV = 'BV1CA411F7Te';
+const comboBlVideos = {
+  // Barre
+  'C1':[{p:1,label:'Pliés - A'},{p:2,label:'Pliés - B'}],
+  'C2':[{p:3,label:'Battements tendus/glissés - A'},{p:4,label:'Battements tendus/glissés - B'}],
+  'C3':[{p:5,label:'Battements fondus/développés - A'},{p:6,label:'Battements fondus/développés - B'}],
+  'C4':[{p:7,label:'Grands battements devant - A'},{p:8,label:'Grands battements devant - B'}],
+  'C5':[{p:9,label:'Grands battements 2nd/derrière - A'},{p:10,label:'Grands battements 2nd/derrière - B'}],
+  // Centre
+  'C6':[{p:11,label:'Port de bras - A'},{p:12,label:'Port de bras - B'}],
+  'C7':[{p:13,label:'Ronds de jambe à terre - A'},{p:14,label:'Ronds de jambe à terre - B'}],
+  'C8':[{p:15,label:'Transfer of weight - A'},{p:16,label:'Transfer of weight - B'}],
+  'C9':[{p:17,label:'Adage - A'},{p:18,label:'Adage - B'}],
+  'C10':[{p:19,label:'Sautés/changements - A'},{p:20,label:'Sautés/changements - B'}],
+  'C11':[{p:21,label:'Glissades/sissonnes/assemblés - A'},{p:22,label:'Glissades/sissonnes/assemblés - B'}],
+  'C12':[{p:23,label:'Posés/temps levés - A'},{p:24,label:'Posés/temps levés - B'}],
+  'C13':[{p:25,label:'Turns - A'},{p:26,label:'Turns - B'}],
+  'C14':[{p:27,label:'Grand allegro - A'},{p:28,label:'Grand allegro - B'}],
+  'C15':[{p:29,label:'Dance A (女)'}],
+  'DanceB':[{p:30,label:'Dance B (男)'}],
+  'DanceC':[{p:31,label:'Dance C (女)'}],
+  'DanceDf':[{p:32,label:'Dance D (女)'}],
+  'DanceDm':[{p:33,label:'Dance D (男)'}],
+  'DanceEf':[{p:34,label:'Dance E (女)'}],
+  'DanceEm':[{p:35,label:'Dance E (男)'}],
+  'Reverence':[{p:36,label:'Révérence'}],
+};
+
+function renderBlLinks(comboId){
+  const parts = comboBlVideos[comboId];
+  if(!parts) return '';
+  return parts.map(v => {
+    const url = `https://www.bilibili.com/video/${BL_BV}/?p=${v.p}`;
+    return `<a class="bl-btn" href="${url}" target="_blank" rel="noopener" style="font-size:0.8rem;">📺 ${v.label}</a>`;
+  }).join('');
+}
 
 // ===== Chinese term hints for beat tables (v2: French-first detection) =====
 // French term → Chinese translation map
