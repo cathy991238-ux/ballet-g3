@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>英皇芭蕾 G3 学习工具</title>
+<style>
+/* ===== Reset & Variables ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --pink-50:#fef5f7;--pink-100:#fce4ec;--pink-200:#f8bbd0;--pink-300:#f48fb1;
+  --pink-400:#ec407a;--pink-500:#d81b60;--pink-600:#ad1457;--pink-700:#880e4f;
+  --gold:#c9a96e;--gold-light:#f5e6cc;
+  --text:#2d1b2e;--text-light:#6d5d6e;--bg:#fef5f7;--card-bg:#fff;
+  --radius:12px;--shadow:0 2px 12px rgba(173,20,87,0.08);
+  --font-cn:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --font-en:"Georgia","Times New Roman",serif;
+}
+body{
+  font-family:var(--font-cn);color:var(--text);background:var(--bg);
+  line-height:1.6;-webkit-tap-highlight-color:transparent;
+  padding-bottom:env(safe-area-inset-bottom,20px);
+}
+
+/* ===== Navigation ===== */
+nav{position:sticky;top:0;z-index:100;background:linear-gradient(135deg,var(--pink-600),var(--pink-700));box-shadow:0 2px 16px rgba(173,20,87,0.25);}
+.nav-inner{max-width:1100px;margin:0 auto;padding:0 16px;}
+.nav-title{color:#fff;font-family:var(--font-en);font-size:1.25rem;text-align:center;padding:10px 0 4px;letter-spacing:0.5px;}
+.nav-tabs{display:flex;gap:4px;padding:0 0 6px;justify-content:center;}
+.nav-tabs button{
+  background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.8);border:none;
+  padding:10px 28px;border-radius:22px;cursor:pointer;font-size:1rem;
+  font-family:var(--font-cn);transition:all 0.2s;white-space:nowrap;letter-spacing:0.5px;
+}
+.nav-tabs button.active{background:#fff;color:var(--pink-600);font-weight:700;box-shadow:0 2px 12px rgba(0,0,0,0.12);}
+.nav-tabs button:active{transform:scale(0.96);}
+
+.sub-tabs{display:flex;gap:6px;padding:0 0 10px;justify-content:center;flex-wrap:wrap;}
+.sub-tabs button{
+  background:transparent;color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.25);
+  padding:4px 14px;border-radius:14px;cursor:pointer;font-size:0.78rem;
+  font-family:var(--font-cn);transition:all 0.2s;
+}
+.sub-tabs button.active{background:rgba(255,255,255,0.2);color:#fff;font-weight:600;border-color:rgba(255,255,255,0.5);}
+.sub-tabs::before{content:'—';color:rgba(255,255,255,0.3);margin:0 4px;font-size:0.7rem;align-self:center;}
+
+/* ===== Main Content ===== */
+main{max-width:1100px;margin:0 auto;padding:16px;}
+
+/* ===== Section Headers ===== */
+.section-header{
+  display:flex;align-items:center;gap:10px;margin:20px 0 12px;
+  cursor:pointer;user-select:none;padding:8px 0;
+}
+.section-header h2{
+  font-family:var(--font-en);font-size:1.15rem;color:var(--pink-600);
+  flex:1;
+}
+.section-header .arrow{transition:transform 0.3s;color:var(--pink-400);font-size:1rem;}
+.section-header.collapsed .arrow{transform:rotate(-90deg);}
+.section-body{overflow:hidden;transition:max-height 0.4s ease;max-height:5000px;}
+.section-body.collapsed{max-height:0;}
+
+/* ===== Term Card ===== */
+.term-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+.term-card{
+  background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:16px;display:flex;flex-direction:column;gap:10px;
+  border-left:3px solid var(--pink-300);transition:transform 0.15s;
+}
+.term-card:active{transform:scale(0.985);}
+.term-card .fr-word{font-family:var(--font-en);font-size:1.2rem;color:var(--pink-600);font-style:italic;line-height:1.3;}
+.term-card .zh-word{font-size:0.95rem;color:var(--text);font-weight:500;}
+.term-card .term-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.term-card .term-actions button{
+  background:var(--pink-100);color:var(--pink-600);border:none;
+  padding:6px 14px;border-radius:18px;cursor:pointer;font-size:0.85rem;
+  font-family:var(--font-cn);transition:all 0.2s;display:flex;align-items:center;gap:4px;
+}
+.term-card .term-actions button:hover{background:var(--pink-200);}
+.term-card .term-actions button:active{transform:scale(0.94);}
+.term-card .term-actions button.playing{background:var(--pink-400);color:#fff;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+.term-desc{font-size:0.8rem;color:var(--text-light);line-height:1.5;padding:6px 10px;background:var(--pink-50);border-radius:8px;border-left:2px solid var(--pink-200);}
+.term-links{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.term-links a{font-size:0.73rem;padding:4px 10px;border-radius:12px;text-decoration:none;transition:all 0.2s;}
+.term-link-bl{background:#fde8f0;color:#e55b8a;border:1px solid #e8a0b4;}
+.term-link-bl:hover{background:#fb7299;color:#fff;}
+.term-link-yt{background:#fdf5e6;color:#b8933a;border:1px solid #d4b876;}
+.term-link-yt:hover{background:#c9a96e;color:#fff;}
+
+/* Beat cell speaker */
+.beat-speak{display:inline-block;margin-left:4px;cursor:pointer;font-size:0.75rem;opacity:0.5;transition:opacity 0.2s;vertical-align:middle;}
+.beat-speak:hover{opacity:1;}
+
+/* ===== Combo Card ===== */
+.combo-card{
+  background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:16px;margin-bottom:16px;border-top:3px solid var(--gold);
+}
+.combo-card h3{font-family:var(--font-en);color:var(--pink-600);font-size:1.05rem;margin-bottom:6px;}
+.combo-card .combo-meta{font-size:0.85rem;color:var(--text-light);margin-bottom:10px;line-height:1.5;}
+.combo-card .combo-meta strong{color:var(--text);}
+
+/* Beat table */
+.beat-toggle{
+  background:var(--pink-100);color:var(--pink-600);border:none;
+  padding:8px 16px;border-radius:var(--radius);cursor:pointer;
+  font-size:0.88rem;font-family:var(--font-cn);width:100%;text-align:left;
+  display:flex;justify-content:space-between;align-items:center;transition:background 0.2s;
+}
+.beat-toggle:hover{background:var(--pink-200);}
+.beat-toggle .arrow2{transition:transform 0.3s;display:inline-block;}
+.beat-table-wrap{overflow:hidden;transition:max-height 0.4s ease;max-height:3000px;}
+.beat-table-wrap.collapsed{max-height:0;}
+.beat-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:0.82rem;}
+.beat-table th{background:var(--pink-600);color:#fff;padding:8px 10px;text-align:left;font-weight:500;position:sticky;top:0;}
+.beat-table td{padding:6px 10px;border-bottom:1px solid var(--pink-100);vertical-align:top;}
+.beat-table tr:nth-child(even) td{background:var(--pink-50);}
+.beat-table .counts{white-space:nowrap;font-weight:600;color:var(--pink-600);width:80px;}
+
+/* Video area */
+.video-wrap{margin-top:12px;}
+.video-wrap .yt-search-btn{
+  display:inline-flex;align-items:center;gap:6px;margin-top:8px;
+  background:linear-gradient(135deg,#c9a96e,#b8933a);color:#fff;
+  border:none;padding:10px 20px;border-radius:24px;cursor:pointer;
+  font-size:0.88rem;font-family:var(--font-cn);text-decoration:none;
+  transition:all 0.2s;box-shadow:0 2px 8px rgba(201,169,110,0.3);
+}
+.video-wrap .yt-search-btn:hover{background:#b8933a;}
+
+.video-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.video-links a{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:10px 16px;border-radius:24px;cursor:pointer;
+  font-size:0.85rem;font-family:var(--font-cn);text-decoration:none;
+  transition:all 0.2s;white-space:nowrap;
+}
+.video-links .yt-btn{background:linear-gradient(135deg,#c9a96e,#b8933a);color:#fff;box-shadow:0 2px 8px rgba(201,169,110,0.3);}
+.video-links .yt-btn:hover{background:#b8933a;transform:translateY(-1px);}
+.video-links .bl-btn{background:linear-gradient(135deg,#fb7299,#e55b8a);color:#fff;box-shadow:0 2px 8px rgba(251,114,153,0.3);}
+.video-links .bl-btn:hover{background:#e55b8a;transform:translateY(-1px);}
+.video-links .browser-note{font-size:0.72rem;color:var(--text-light);margin-top:2px;width:100%;}
+.video-links .browser-note span{background:var(--pink-50);padding:2px 8px;border-radius:10px;margin-right:4px;}
+
+/* Chinese term hint in beat tables */
+.cn-hint{font-size:0.72rem;color:var(--pink-400);display:block;margin-top:1px;}
+
+/* Extended knowledge sections */
+.ext-section{margin-top:16px;border:1px dashed var(--pink-200);border-radius:var(--radius);overflow:hidden;}
+.ext-header{
+  display:flex;align-items:center;gap:8px;padding:10px 14px;
+  background:linear-gradient(135deg,#fce4ec,#f8e8ff);cursor:pointer;
+  font-size:0.85rem;color:var(--pink-600);user-select:none;transition:background 0.2s;
+}
+.ext-header:hover{background:linear-gradient(135deg,#f8bbd0,#f0d8ff);}
+.ext-arrow{font-size:0.7rem;transition:transform 0.3s;display:inline-block;}
+.ext-label{font-weight:500;}
+.ext-body{overflow:hidden;transition:max-height 0.4s ease;max-height:2000px;padding:0 14px 14px;}
+.ext-body.collapsed{max-height:0;padding:0 14px;}
+.ext-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px;}
+.ext-card{
+  background:linear-gradient(135deg,#fdf5ff,#fef5f7);border:1px solid var(--pink-100);
+  border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;
+}
+.ext-fr{font-family:var(--font-en);font-size:1rem;color:#7b1fa2;font-style:italic;line-height:1.3;}
+.ext-zh{font-size:0.88rem;color:var(--text);font-weight:500;}
+.ext-note{font-size:0.78rem;color:var(--text-light);line-height:1.4;}
+.ext-card .term-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px;}
+.ext-card .term-actions button{
+  background:var(--pink-100);color:var(--pink-600);border:none;
+  padding:5px 12px;border-radius:14px;cursor:pointer;font-size:0.78rem;
+  font-family:var(--font-cn);transition:all 0.2s;
+}
+.ext-card .term-actions button.speed-slow{background:#ede0f5;color:#7b1fa2;}
+.ext-card .term-actions button.playing{background:var(--pink-400);color:#fff;animation:pulse 1s infinite;}
+.ext-card .svg-wrap{display:flex;justify-content:center;align-items:center;min-height:60px;}
+.ext-card .svg-wrap svg{max-height:80px;width:auto;}
+
+@media(min-width:640px){.ext-grid{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:1024px){.ext-grid{grid-template-columns:repeat(3,1fr);}}
+
+/* ===== Responsive ===== */
+@media(min-width:640px){
+  .term-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(min-width:1024px){
+  .term-grid{grid-template-columns:repeat(3,1fr);}
+  main{padding:24px;}
+  .nav-title{font-size:1.4rem;}
+}
+
+/* Tabs visibility */
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* Footer */
+footer{text-align:center;padding:20px;color:var(--text-light);font-size:0.78rem;}
+footer a{color:var(--pink-400);}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+  background:var(--pink-600);color:#fff;padding:10px 24px;border-radius:24px;
+  font-size:0.9rem;z-index:200;opacity:0;transition:opacity 0.3s;pointer-events:none;
+}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav>
+<div class="nav-inner">
+<div class="nav-title">Royal Academy of Dance · Grade 3</div>
+<div class="nav-tabs">
+  <button class="active" data-tab="terminology">术语 Terminology</button>
+  <button data-tab="combinations">组合 Combinations</button>
+</div>
+<div class="sub-tabs" id="subTabs">
+  <button class="active" data-sub="barre">把杆动作 Barre</button>
+  <button data-sub="centre">中间动作 Centre</button>
+</div>
+</div>
+</nav>
+
+<main>
+<!-- ===== TERMINOLOGY TAB ===== -->
+<div class="tab-content active" id="tab-terminology">
+<div id="term-barre"></div>
+<div id="term-centre"></div>
+</div>
+
+<!-- ===== COMBINATIONS TAB ===== -->
+<div class="tab-content" id="tab-combinations">
+<div id="combo-barre"></div>
+<div id="combo-centre"></div>
+</div>
+</main>
+
+<footer>
+英皇芭蕾 Grade 3 学习工具 · 法语发音使用浏览器语音合成<br>
+<small>Built for Y&T Ballet Academy</small>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DATA: Terminology =====
+// desc = full description from source document, including parenthetical explanations
+const termsBarre = [
+  {
+    group:"Plié — 屈膝",
+    items:[
+      {fr:"Plié",zh:"屈膝",desc:""},
+      {fr:"Demi-plié",zh:"半蹲",desc:""},
+      {fr:"Grand plié",zh:"全蹲",desc:""},
+    ]
+  },
+  {
+    group:"Battement tendu — 擦地",
+    items:[
+      {fr:"Battement tendu",zh:"擦地",desc:""},
+      {fr:"Battement tendu devant",zh:"向前擦地",desc:""},
+      {fr:"Battement tendu de côté",zh:"向旁擦地",desc:""},
+      {fr:"Battement tendu derrière",zh:"向后擦地",desc:""},
+      {fr:"Battement tendu en croix",zh:"十字交叉擦地",desc:"按前→旁→后→旁顺序各做一次擦地"},
+    ]
+  },
+  {
+    group:"Battement glissé — 小踢腿",
+    items:[
+      {fr:"Battement glissé",zh:"小踢腿",desc:"脚擦地快速踢出至离地约25°，强调爆发力"},
+      {fr:"Battement glissé devant",zh:"向前小踢腿",desc:""},
+      {fr:"Battement glissé de côté",zh:"向旁小踢腿",desc:""},
+      {fr:"Battement glissé derrière",zh:"向后小踢腿",desc:""},
+      {fr:"Battement glissé en croix",zh:"十字交叉小踢腿",desc:""},
+    ]
+  },
+  {
+    group:"Battement fondu — 单腿蹲",
+    items:[
+      {fr:"Battement fondu to dégagé",zh:"单腿蹲点地练习",desc:"主力腿和动力腿同时弯曲、同时伸直"},
+      {fr:"Cou de pied devant",zh:"（脚脖子）前",desc:"动力腿脚尖放在主力腿脚踝前方"},
+      {fr:"Cou de pied derrière",zh:"（脚脖子）后",desc:"动力腿脚尖放在主力腿脚踝后方"},
+      {fr:"Développé devant",zh:"（伸展的意思）前控腿",desc:"动力腿经Passé向前缓慢伸展至90°或更高"},
+    ]
+  },
+  {
+    group:"Grand battement — 大踢腿",
+    items:[
+      {fr:"Grand battement",zh:"大踢腿",desc:"动力腿擦地快速踢至90°以上，落下经点地收回"},
+      {fr:"Grand battement devant",zh:"向前大踢腿",desc:""},
+      {fr:"Grand battement de côté",zh:"向旁大踢腿",desc:""},
+      {fr:"Grand battement derrière",zh:"向后大踢腿",desc:""},
+      {fr:"Relevé en cinquième position",zh:"五位立半脚尖",desc:"双脚在五位脚位上立起半脚尖，脚跟并拢"},
+    ]
+  },
+];
+
+const termsCentre = [
+  {
+    group:"Port de bras — 臂膀训练",
+    items:[
+      {fr:"Port de bras",zh:"臂膀训练",desc:"手臂在不同位置间的运行练习"},
+      {fr:"Bras bas",zh:"准备位手",desc:"双手在身体前方自然垂下，形成椭圆形"},
+      {fr:"Demi second (Demi 2nd)",zh:"小二位手",desc:"手臂在二位与Bras bas之间，略向前伸出"},
+      {fr:"Chassé",zh:"追步、滑步",desc:"一只脚追赶另一只的滑动舞步"},
+      {fr:"Balancé de côté",zh:"旁摇摆步",desc:"左右交替的重心摇摆舞步"},
+      {fr:"Petit développé",zh:"小伸展、小幅度吸撩腿",desc:"小幅度的吸撩腿动作"},
+      {fr:"Demi point",zh:"半脚尖",desc:"脚掌着地、脚跟离地的半脚尖站立"},
+    ]
+  },
+  {
+    group:"Rond de jambe à terre — 地面划圈",
+    items:[
+      {fr:"Rond de jambe à terre",zh:"地面划圈",desc:"动力腿脚尖在地面做划圈运动"},
+      {fr:"Basic port de bras",zh:"基础手臂组合",desc:"准备位→一位→二位→呼吸→收准备位的手臂组合"},
+      {fr:"Rond de jambe à terre en dehors",zh:"地面向外划圈（外开划圈）",desc:"动力腿从前向外划至后"},
+      {fr:"Rond de jambe à terre en dedans",zh:"地面向内划圈（内收划圈）",desc:"动力腿从后向内划至前"},
+    ]
+  },
+  {
+    group:"Adage / Adagio — 慢板控制",
+    items:[
+      {fr:"Adage / Adagio",zh:"慢板控制",desc:"缓慢、有控制地完成一系列舞姿的练习"},
+      {fr:"1st arabesque",zh:"第一阿拉贝斯克（前手齐眉）",desc:"前手抬至眉高，后手向后延伸。英皇学派与术语词典不同"},
+      {fr:"2nd arabesque",zh:"第二阿拉贝斯克（前手齐肩）",desc:"前手抬至肩高，后手向后延伸"},
+      {fr:"Pas de bourrée dessous (under)",zh:"后旁前舞步（插秧步）",desc:"后→旁→前的三步连接舞步"},
+      {fr:"Classical walks",zh:"古典行走步",desc:"带有韵律美感的古典芭蕾行走方式"},
+      {fr:"Classical pose",zh:"古典舞姿",desc:"经典的芭蕾舞姿站立造型"},
+      {fr:"Wide 5th",zh:"宽五位手",desc:"五位手的加宽版本，手臂向两侧更打开"},
+    ]
+  },
+  {
+    group:"Sauté — 小跳类",
+    items:[
+      {fr:"Parallel 1st (6th)",zh:"平行一位脚（六位脚）",desc:"双脚平行并拢，脚尖朝前"},
+      {fr:"Échappé sauté",zh:"分合跳",desc:"从一位/五位跳起，空中打开至二位落地"},
+      {fr:"Changement",zh:"换脚跳（三位、五位）",desc:"五位跳起后空中换脚，换前脚落地"},
+    ]
+  },
+  {
+    group:"Glissades, Sissonnes & Assemblés",
+    items:[
+      {fr:"Glissade derrière",zh:"后滑步（平移不换脚）",desc:"平移滑步，不交换脚的先后顺序"},
+      {fr:"Sissonne fermée de côté dessus (over)",zh:"旁收分腿跳",desc:"前脚方向跳，后腿覆盖。跳起分腿后收腿落地"},
+      {fr:"Assemblé dessus (over)",zh:"集中跳（后到前）",desc:"后脚踢出后空中收回至前，双脚同时落地"},
+    ]
+  },
+  {
+    group:"Posés & Temps levés — 上步单腿跳",
+    items:[
+      {fr:"Posé Temps levés",zh:"上步单腿跳",desc:"从一只脚到另一只脚的上步动作（可向前/向旁）"},
+      {fr:"Temps levé in attitude devant",zh:"前Attitude单腿跳",desc:"单腿跳起，另一腿呈前Attitude姿态"},
+      {fr:"Posé Temps levé in retiré derrière",zh:"后吸腿单腿跳",desc:"上步后单腿跳起呈后吸腿姿态"},
+      {fr:"Retiré derrière",zh:"后吸腿",desc:"动力腿大腿充分外开，与躯干呈现直角，动力腿脚尖放在支撑腿膝盖后"},
+      {fr:"Retiré devant",zh:"前吸腿",desc:"动力腿大腿充分外开，与躯干呈现直角，动力腿脚尖放在支撑腿膝盖前"},
+    ]
+  },
+  {
+    group:"Turns & Grand allegro",
+    items:[
+      {fr:"Turns",zh:"旋转、转体技巧",desc:""},
+      {fr:"Grand allegro",zh:"大跳组合",desc:"大幅度的跳跃组合，包括各种大跳动作"},
+    ]
+  },
+];
+
+// ===== EXTENDED KNOWLEDGE: Related advanced terms for each group =====
+const termExtensions = {
+  "Battement tendu — 擦地": [
+    {fr:"Battement tendu jeté",zh:"弹腿擦地（更快更高）",note:"Glissé的另一种叫法，强调快速弹出",svg:"tendu"},
+    {fr:"Battement tendu pour le pied",zh:"压脚跟擦地",note:"擦地出后压脚跟再收回",svg:null},
+  ],
+  "Battement glissé — 小踢腿": [
+    {fr:"Battement jeté",zh:"弹腿（45°小踢）",note:"比Glissé更高，强调空中停顿",svg:null},
+    {fr:"Petit battement",zh:"小腿弹打",note:"Cou de pied位置前后快速弹打",svg:"couDePiedDevant"},
+  ],
+  "Battement fondu — 单腿蹲": [
+    {fr:"Développé à la seconde",zh:"向旁控腿",note:"经Passé向旁伸展至90°+",svg:null},
+    {fr:"Développé arabesque",zh:"阿拉贝斯克控腿",note:"经Passé向后伸展形成Arabesque线",svg:"arabesque1"},
+    {fr:"Enveloppé",zh:"收裹动作",note:"Développé的反向，从点地经Passé收回",svg:null},
+  ],
+  "Grand battement — 大踢腿": [
+    {fr:"Grand battement en cloche",zh:"钟摆式大踢腿",note:"前后连续摆动如钟摆，经一位过渡",svg:null},
+    {fr:"Battement en balançoire",zh:"摇摆大踢腿",note:"身体配合前后摆动的大踢腿",svg:"grandBattement"},
+  ],
+  "Port de bras — 臂膀训练": [
+    {fr:"Épaulement",zh:"肩部转向",note:"上半身45°扭转配合头部方向",svg:null},
+    {fr:"Révérence",zh:"行礼",note:"课程结束时的行礼动作",svg:"brasBas"},
+    {fr:"Port de bras in 4th/5th",zh:"四位/五位手臂运行",note:"手臂在不同位置间的运行组合",svg:"wide5th"},
+  ],
+  "Rond de jambe à terre — 地面划圈": [
+    {fr:"Rond de jambe en l'air",zh:"空中划圈",note:"动力腿在空中做划圈动作",svg:null},
+    {fr:"Grand rond de jambe",zh:"大幅划圈",note:"经Passé前/后划大圈至后/前",svg:null},
+  ],
+  "Adage / Adagio — 慢板控制": [
+    {fr:"3rd arabesque",zh:"第三阿拉贝斯克",note:"前手更高更开，后手向后延伸",svg:null},
+    {fr:"Attitude devant",zh:"前阿提秋",note:"前腿屈膝抬起呈螺旋线",svg:null},
+    {fr:"Attitude derrière",zh:"后阿提秋",note:"后腿屈膝抬起呈螺旋线",svg:null},
+    {fr:"Penché arabesque",zh:"倾斜阿拉贝斯克",note:"Arabesque基础上身体前倾",svg:"arabesque1"},
+    {fr:"Promenade",zh:"旋转行走（慢板转）",note:"保持舞姿在Pointe上慢速转动",svg:null},
+  ],
+  "Sauté — 小跳类": [
+    {fr:"Petit allegro",zh:"快板小跳组合",note:"小跳的速度和组合变化",svg:null},
+    {fr:"Entrechat",zh:"击打跳",note:"空中双腿交错击打",svg:null},
+    {fr:"Jeté ordinaire",zh:"普通抛跳",note:"从一脚抛至另一脚",svg:null},
+  ],
+  "Glissades, Sissonnes & Assemblés": [
+    {fr:"Pas de chat",zh:"猫跳步",note:"双脚依次经Retiré跳跃",svg:null},
+    {fr:"Brisé",zh:"碎跳",note:"移动中带击打的小跳",svg:null},
+    {fr:"Sissonne ouverte",zh:"开式分腿跳",note:"Sissonne跳后保持空中舞姿",svg:null},
+  ],
+  "Posés & Temps levés — 上步单腿跳": [
+    {fr:"Ballonné",zh:"弹跳",note:"弹簧似的弹跳动作",svg:null},
+    {fr:"Ballotté",zh:"摇摆跳",note:"重心前后摇摆的跳跃",svg:null},
+    {fr:"Contretemps",zh:"切分跳",note:"切分节奏的上步跳",svg:null},
+  ],
+  "Turns & Grand allegro": [
+    {fr:"Pirouette en dehors",zh:"向外转（单圈）",note:"从五位/四位/二位开始的旋转",svg:null},
+    {fr:"Pirouette en dedans",zh:"向内转（单圈）",note:"向内方向的单腿旋转",svg:null},
+    {fr:"Fouetté",zh:"挥鞭转",note:"Grand allegro中连续的挥鞭式旋转",svg:null},
+    {fr:"Piqué tour",zh:"戳步转",note:"脚尖直接戳地立起旋转",svg:"releve5th"},
+    {fr:"Grand jeté",zh:"大抛跳",note:"向前大幅分腿跳跃",svg:"arabesque1"},
+    {fr:"Saut de chat",zh:"猫大跳",note:"Grand allegro中的大猫跳",svg:null},
+  ],
+  "Plié — 屈膝": [
+    {fr:"Grand plié in 2nd position",zh:"二位全蹲",note:"二位脚位上的全蹲，脚跟不离地",svg:"grandPlie"},
+  ],
+};
+
+// ===== DATA: Combinations =====
+const combosBarre = [
+  {
+    id:"C1",name:"Pliés",
+    commence:"Sideways to barre, 1st position, Both arms bras bas",
+    intro:"4 counts",perform:"All together",
+    rows:[
+      ["1-2","Hold","Basic port de bras to 2nd"],
+      ["3","Hold","Place hand on barre; Head to barre"],
+      ["4","Hold","Free arm to bras bas; Head to centre"],
+      ["1","Hold","Arm open sideways to 5th; Head follows hand"],
+      ["2","Hold","Arm to 2nd; Head follows hand"],
+      ["3-4","Rise and lower","—"],
+      ["5-6","Demi-plié","Arm to 1st and 2nd"],
+      ["7&a","Rise and small steps on demi-pointe to face barre","Place hand on barre"],
+      ["8","Lower in 1st","—"],
+      ["1-4","Grand plié","—"],
+      ["5&a","Rise on count 5 and hold","Hold count 5 upstage arm to 1st on count 5&; downstage arm to 1st on count 5a"],
+      ["6","Hold","—"],
+      ["&a","Small steps on demi-pointe to face other side","Free arm through 1st to 2nd"],
+      ["7-8","Lower in 1st","Bras bas"],
+      ["1-16","Repeat to other side","Both arms bras bas on count 16"],
+    ],
+    video:"RAD Grade 3 Pliés"
+  },
+  {
+    id:"C2",name:"Battements tendus and battements glissés",
+    commence:"Sideways to barre, 3rd position, Bras bas",
+    intro:"4 counts",perform:"All together",
+    rows:[
+      ["1-2","Hold","—"],
+      ["3-4","Hold","Basic port de bras to 2nd"],
+      ["1-8","Battement tendu en croix","—"],
+      ["1","Battement glissé devant","—"],
+      ["2","Brush through 1st to glissé height derrière","—"],
+      ["3","Repeat count 2 in reverse","—"],
+      ["4","Close 3rd","—"],
+      ["5-6","Battement glissé to 2nd closing 3rd derrière","—"],
+      ["7-8","Battement glissé to 2nd closing 3rd devant","—"],
+      ["1-16","Repeat all","Bras bas"],
+    ],
+    video:"RAD Grade 3 Battements tendus glissés"
+  },
+  {
+    id:"C3",name:"Battements fondus and développés devant",
+    commence:"Sideways to barre, 3rd position, Bras bas",
+    intro:"4 counts",perform:"All together",
+    rows:[
+      ["1-2","Hold","—"],
+      ["3-4","Hold","Basic port de bras to 2nd"],
+      ["1-2","Battement fondu to dégagé devant","Head to centre"],
+      ["3","Cou de pied devant en fondu","—"],
+      ["4","Close 3rd straightening legs","—"],
+      ["5-8","Repeat in reverse with inside leg","Arm bras bas and Head erect on count 8"],
+      ["1-6","Développé devant and close 3rd devant","Basic port de bras"],
+      ["&","Inside leg cou de pied derrière en fondu","—"],
+      ["A:7& / B:7&","Small steps en demi-pointe turning / Pas de bourrée dessous","Free arm through 1st to 2nd; Head follows arm"],
+      ["8","Lower into 3rd","—"],
+      ["1-16","Repeat to other side","Bras bas"],
+    ],
+    video:"RAD Grade 3 Battements fondus"
+  },
+  {
+    id:"C4",name:"Grands battements devant",
+    commence:"Sideways to barre, 3rd position, Bras bas",
+    intro:"8 counts",perform:"All together",
+    rows:[
+      ["1-4","Hold","—"],
+      ["5-8","Hold","Basic port de bras to 2nd"],
+      ["1-2","Grand battement devant to dégagé","—"],
+      ["3","Close 3rd","—"],
+      ["4","Hold","—"],
+      ["5-7","Repeat counts 1-3","—"],
+      ["8","Demi plié","Arm to bras bas"],
+      ["1-4","2 Relevés in 5th","Arm to 1st on count 1"],
+      ["5","Demi détourné","Free arm to 2nd"],
+      ["6","Hold","—"],
+      ["7-8","Lower into 3rd en demi-plié and straighten legs","—"],
+      ["1-16","Repeat to other side","—"],
+      ["1-32","Repeat all","Bras bas"],
+    ],
+    video:"RAD Grade 3 Grands battements"
+  },
+  {
+    id:"C5",name:"Grands battements to second and derrière",
+    commence:"Facing barre, 3rd position downstage foot devant, Bras bas",
+    intro:"8 counts",perform:"All together",
+    rows:[
+      ["1-4","Hold","—"],
+      ["5-8","Hold","Place hands on barre"],
+      ["1-2","Grand battement to 2nd to dégagé (downstage leg)","—"],
+      ["3-4","Close 3rd devant and hold","—"],
+      ["5-7","Repeat counts 1-3","—"],
+      ["8","Demi-plié","—"],
+      ["1-4","2 relevés in 5th","—"],
+      ["5-6","Dégagé to 2nd with front foot straightening supporting leg and hold","—"],
+      ["7-8","Close 3rd derrière and hold","—"],
+      ["1-16","Repeat with opposite leg","—"],
+      ["1-2","Grand battement derrière to dégagé","—"],
+      ["3-4","Close 3rd and hold","—"],
+      ["5-7","Repeat last counts 1-3","—"],
+      ["8","Demi-plié","—"],
+      ["1-4","2 Relevés in 5th","—"],
+      ["5-6","Dégagé to 2nd with back foot straightening supporting leg and hold","—"],
+      ["7-8","Close 3rd devant and hold","—"],
+      ["1-16","Repeat last with opposite leg","Bras bas on count 16"],
+    ],
+    video:"RAD Grade 3 Grands battements second"
+  },
+];
+
+const combosCentre = [
+  {
+    id:"C6",name:"Port de bras",
+    commence:"Facing 6, 3rd position left foot devant, Bras bas",
+    intro:"4 counts",perform:"Two at a time",
+    rows:[
+      ["1","Hold","—"],
+      ["2","Hold","Arms to 1st"],
+      ["3-4","Step back onto relaxed right leg into dégagé devant","Arms through bras bas and 2nd to 4th, right arm raised"],
+      ["1-2","Transfer weight forward to dégagé derrière","—"],
+      ["3-4","Repeat transfer of weight in reverse to dégagé devant","—"],
+      ["5","Close 3rd","—"],
+      ["6","Hold","Arms change overhead to 4th, left arm raised"],
+      ["7-8","Chassé to left into 2nd and dégagé in 2nd","Left arm lowers across body; right arm through bras bas to 1st"],
+      ["1-4","4 Balancés de côté commencing right","Arms 3rd to 3rd / Left hand on waist; right arm wide demi-bras"],
+      ["5","Right leg petit développé to dégagé in open 4th devant en fondu","Right arm over right leg palm up; left arm demi-seconde"],
+      ["6","Close right foot 5th devant en demi-pointes, facing 5","Arms undersweep to 1st"],
+      ["7-8","Step back onto relaxed left leg into dégagé devant","Arms undersweep through 2nd to arms 4th, left arm raised"],
+      ["1-16","Repeat to other side","—"],
+      ["(End)","Close 3rd devant","Bras bas"],
+    ],
+    video:"RAD Grade 3 Port de bras"
+  },
+  {
+    id:"C7",name:"Ronds de jambe à terre",
+    commence:"Upstage centre, En face 1st position, Bras bas",
+    intro:"4 counts",perform:"All together",
+    rows:[
+      ["1-2","Hold","—"],
+      ["3-4","Hold","Basic port de bras to 2nd"],
+      ["&1-3","Extend right leg to side en fondu, 3 weight transfers side to side","Arms to 4th left arm raised, change overhead; Head follows side arm"],
+      ["4","Straighten supporting leg","Arms 2nd; Head erect"],
+      ["5-8","Rond de jambe à terre en dehors or en dedans (left leg)","—"],
+      ["&1-8","Fondu on right leg and repeat to other side","—"],
+      ["1-16","Repeat all","—"],
+      ["(End)","Close 1st","Bras bas"],
+    ],
+    video:"RAD Grade 3 Ronds de jambe à terre"
+  },
+  {
+    id:"C9",name:"Adage",
+    commence:"Upstage centre, facing 6, Classical pose right foot derrière, Bras bas",
+    intro:"4 counts",perform:"Two at a time",
+    rows:[
+      ["1-2","Hold","—"],
+      ["3-4","Hold","Arms through bras bas to 1st"],
+      ["1-2","Step forward into dégagé derrière","Arms 1st arabesque line"],
+      ["&3-4","2 Steps forward into dégagé derrière on &3 and hold","Arms through 1st to 2nd arabesque line"],
+      ["5","Left leg step to right across body → right foot cou de pied derrière en fondu","Arms 3rd right arm forward"],
+      ["&a6","Soft pas de bourrée dessous → left foot cou de pied derrière en fondu facing 5","Arms through 2nd to 3rd left arm forward"],
+      ["&a","Repeat first 2 steps of pas de bourrée dessous to other side","Arms to 2nd"],
+      ["7&","2 classical walks forward toward 6 commencing left","Arms through bras bas and 1st"],
+      ["8","Step forward into dégagé derrière en fondu","Arms 2nd arabesque line"],
+      ["1","Step back into dégagé devant","Arms full port de bras to 5th"],
+      ["2","Hold","—"],
+      ["&3","2 steps backward commencing left","Arms through 2nd and full port de bras to 5th"],
+      ["4","Hold","—"],
+      ["&5-6","Soft rise and run clockwise curve to upstage centre","Arms open to wide 5th → through 2nd to 3rd right arm forward"],
+      ["7-8","Step forward right → Classical pose left foot derrière facing 5","Arms through 1st and bras bas"],
+      ["1-15","Repeat to other side","Arms to 1st arabesque line on counts 1-2"],
+      ["16","Free position","Arms free"],
+    ],
+    video:"RAD Grade 3 Adage"
+  },
+  {
+    id:"C10",name:"Sautés and changements",
+    commence:"En face, Parallel 1st, Bras bas",
+    intro:"4 counts",perform:"Two at a time",
+    rows:[
+      ["1-4","Hold","—"],
+      ["1-2","2 Jumps in parallel 1st","—"],
+      ["3-4","2 Jumps in parallel 1st by half turn to right","—"],
+      ["5-8","Repeat","—"],
+      ["1","Jump to 1st","—"],
+      ["2","Échappé sauté to 2nd","—"],
+      ["3","Échappé sauté fermé to 3rd right foot front","—"],
+      ["4-6","3 Changements","—"],
+      ["7","Jump into parallel 1st","—"],
+      ["8","Hold demi-plié","—"],
+      ["1-16","Repeat to other side, straightening legs on count 16","—"],
+      ["B:17-18","Hold","—"],
+    ],
+    video:"RAD Grade 3 Sautés"
+  },
+  {
+    id:"C11",name:"Glissades, sissonnes and assemblés",
+    commence:"Upstage near corner 7, En face 3rd position left foot devant, Bras bas",
+    intro:"4 counts",perform:"Two at a time",
+    rows:[
+      ["1-2","Hold","—"],
+      ["3-4","Hold","Arms through 1st to 3rd right arm forward"],
+      ["&1","Glissade derrière","—"],
+      ["&2","Repeat","—"],
+      ["3","Changement","—"],
+      ["&4","Straighten legs and demi-plié","—"],
+      ["&5-8","Repeat to other side","—"],
+      ["&1&2","Sissonne fermée de côté dessus, straighten legs and demi-plié","Arms 3rd right arm forward"],
+      ["&3","Repeat sissonne to other side","—"],
+      ["4","Straighten legs and rise","Open left arm to 2nd"],
+      ["5-7","Run toward 5 and step forward right on count 7","Arms through bras bas to 1st"],
+      ["&8","Assemblé dessus turning to face 6","Arms to open 4th left arm raised; Head to raised arm"],
+      ["(End)","Straighten legs","Bras bas"],
+    ],
+    video:"RAD Grade 3 Glissades assemblés"
+  },
+  {
+    id:"C13",name:"Turns",
+    commence:"Corner 8, Facing 5, Parallel 1st, Arms relaxed by sides",
+    intro:"4 counts",perform:"One at a time, continuously",
+    rows:[
+      ["1-2","Hold","—"],
+      ["3-4","Hold","Place arms in free position"],
+      ["1","Step to right","—"],
+      ["&2-5","4 picked up galops en tournant to right toward 6","—"],
+      ["6","Run forward toward 6","—"],
+      ["7","Parallel 1st en demi-plié facing 6","Free arms"],
+      ["8","Relevé onto right leg in parallel retiré","Free arms"],
+    ],
+    video:"RAD Grade 3 Turns"
+  },
+  {
+    id:"C14",name:"Grand allegro",
+    commence:"3rd position either foot devant, Bras bas",
+    intro:"4 counts",perform:"One at a time, continuously",
+    rows:[
+      ["1-2","Hold","Arms free"],
+      ["3-4","Front leg dégagé devant","—"],
+      ["1&","Travelling in circle: step forward and hop in parallel retiré","Arms free throughout"],
+      ["2&","Repeat with other leg","—"],
+      ["3&4&","3 runs forward and leap forward","—"],
+      ["5-12","Repeat twice, finishing near corners 7 or 8","—"],
+      ["13-14","Repeat 1-2& travelling forward on diagonal toward 5 or 6","—"],
+      ["15-16","Free ending - should include hop, leap or jump","—"],
+    ],
+    video:"RAD Grade 3 Grand allegro"
+  },
+  {
+    id:"C15",name:"Dance A — female",
+    commence:"Centre Facing 5, Classical pose left foot derrière",
+    intro:"8 counts",perform:"One at a time",
+    rows:[
+      ["1-5","Hold","—"],
+      ["6-7","Step back into dégagé devant en fondu","Arms reverse through 1st to demi-seconde"],
+      ["8","Step forward","Bras bas"],
+      ["&1","Lilting step forward left → petit développé passé to dégagé devant en fondu","Arms through 1st to 3rd left arm forward"],
+      ["2&","Transfer weight forward onto right → cou de pied derrière en fondu","Arms to high arabesque line left arm raised"],
+      ["3&","First 2 steps of pas de bourrée dessous to face 1","Arms to 2nd; Head erect"],
+      ["4-7&","Repeat last counts 8-3& to other side","—"],
+      ["8&1-2","Facing 5: 2 steps forward right → petit développé passé to dégagé devant en fondu and hold","Arms 3rd left arm forward"],
+      ["&3","Step to right facing 1 → petit développé passé to dégagé devant en fondu facing 6","Arms 3rd right arm forward"],
+      ["&4","Step forward into cou de pied derrière en fondu","Arms reverse toward bras bas"],
+      ["&5-7","Small steps on demi-pointe in 3rd turning right → finish facing 5 right foot devant","Arms open sideways to open 4th right arm raised"],
+      ["8&","Galop preparation en avant left leg (anti-clockwise curve toward 8)","Arms 2nd"],
+      ["1&","Posé en avant and temps levé in attitude devant","Arms 3rd left arm forward"],
+      ["2-7&","Repeat last 8-1& 3 times on alternate sides","—"],
+      ["8-2","Run forward toward 6 → natural 1st en demi-pointes and hold","Arms to 1st, sweep down to demi-seconde behind body"],
+      ["&3-4","Run forward toward 6 → natural 1st en demi-pointes","Arms sweep down and forward to 1st"],
+      ["5&6","3 spring points backward","—"],
+      ["7","Step forward into Classical pose","Arms through bras bas"],
+      ["8-1","Step to right → face 1, left leg derrière classical pose","Right arm through bras bas and 1st to low demi-bras"],
+      ["2-3","Repeat to other side","Bras bas"],
+      ["&","Fondu","Arms full port de bras through 5th to open 5th"],
+      ["4-7","Small steps demi-pointe in 3rd left foot devant, facing 6","Arms lower to demi-seconde"],
+      ["8-3","4 Walks forward right, toward 6, curving clockwise to 7","Arms 3rd right arm forward"],
+      ["4-6","Run forward continuing clockwise curve to upstage centre","Arms 1st"],
+      ["&","Close 3rd right foot devant en demi-pointes facing 5","Arms through bras bas to demi-seconde"],
+      ["7&","Step back into dégagé devant en fondu","—"],
+      ["8&1","Step forward right → glissade derrière facing 1","Arms 1st"],
+      ["2&3","3 Petits jetés derrière springing onto left","Arms demi-bras"],
+      ["4&5","Facing 6: step back into dégagé devant en fondu","Arms demi-seconde; Head to 1"],
+      ["6&7","3 Petits jetés derrière springing onto left","—"],
+      ["&8&","Temps levé into galop preparation en avant right leg","Arms 2nd"],
+      ["1&-4&","4 posés de côté and temps levés in retiré derrière or 4 posés en avant and temps levés","Arms 3rd to 3rd; Head over front arm"],
+      ["5-6","Run forward","Arms free"],
+      ["7-8","Free ending","—"],
+    ],
+    video:"RAD Grade 3 Dance A"
+  },
+];
+
+// ===== Ballet Dancer Silhouette Illustrations =====
+// Each SVG is a graceful dancer silhouette with proper ballet proportions
+function dancerHead(){return'<ellipse cx="50" cy="20" rx="7" ry="9" fill="none" stroke="#ad1457" stroke-width="1.8"/>'}
+function dancerBody(y1,y2){return`<path d="M44 ${y1} Q50 ${y1-3} 56 ${y1} L56 ${y2} Q50 ${y2+4} 44 ${y2} Z" fill="none" stroke="#ad1457" stroke-width="1.8"/>`}
+function dancerTutu(y){return`<path d="M30 ${y} Q35 ${y-9} 50 ${y-7} Q65 ${y-9} 70 ${y} Q65 ${y+5} 50 ${y+3} Q35 ${y+5} 30 ${y} Z" fill="none" stroke="#d81b60" stroke-width="1.3"/>`}
+function dancerLeg(x1,y1,x2,y2,x3,y3){return`<path d="M${x1} ${y1} Q${x2} ${y2} ${x3} ${y3}" fill="none" stroke="#ad1457" stroke-width="1.8" stroke-linecap="round"/>`}
+function dancerFoot(x,y,toeX,toeY){return`<line x1="${x}" y1="${y}" x2="${toeX}" y2="${toeY}" stroke="#ad1457" stroke-width="1.3" stroke-linecap="round"/>`}
+function dancerArm(x1,y1,x2,y2,x3,y3){return`<path d="M${x1} ${y1} Q${x2} ${y2} ${x3} ${y3}" fill="none" stroke="#ad1457" stroke-width="1.5" stroke-linecap="round"/>`}
+function dancerBun(){return'<circle cx="50" cy="13" r="4" fill="none" stroke="#ad1457" stroke-width="1.2"/>'}
+
+function getSvg(key){
+  const svgs = {
+    // Plié - feet in 1st position, knees bent outward, arms in preparatory
+    plie:
+      `<svg viewBox="0 0 100 155" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,20,55,18,72)}
+        ${dancerArm(56,40,80,55,82,72)}
+        ${dancerBody(28,62)}
+        ${dancerTutu(64)}
+        ${dancerLeg(47,69,38,85,32,95)}
+        ${dancerLeg(53,69,62,85,68,95)}
+        ${dancerFoot(32,95,22,100)}${dancerFoot(68,95,78,100)}
+        <text x="50" y="118" text-anchor="middle" font-size="8" fill="#999" font-style="italic">Plié</text>
+      </svg>`,
+
+    // Demi-plié - half bend, arms in 1st position
+    demiPlie:
+      `<svg viewBox="0 0 100 155" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,30,52,28,65)}
+        ${dancerArm(56,40,70,52,72,65)}
+        <ellipse cx="50" cy="60" rx="16" ry="10" fill="none" stroke="#e8a0b4" stroke-width="0.8"/>
+        ${dancerBody(28,62)}
+        ${dancerTutu(64)}
+        ${dancerLeg(47,69,40,82,36,95)}
+        ${dancerLeg(53,69,60,82,64,95)}
+        ${dancerFoot(36,95,26,100)}${dancerFoot(64,95,74,100)}
+        <text x="50" y="118" text-anchor="middle" font-size="8" fill="#999" font-style="italic">Demi-plié</text>
+      </svg>`,
+
+    // Grand plié - full bend, heels lift, arms through 1st to 2nd
+    grandPlie:
+      `<svg viewBox="0 0 100 155" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,18,55,16,70)}
+        ${dancerArm(56,40,82,55,84,70)}
+        ${dancerBody(28,60)}
+        ${dancerTutu(62)}
+        ${dancerLeg(47,67,35,82,28,95)}
+        ${dancerLeg(53,67,65,82,72,95)}
+        ${dancerFoot(28,95,20,98)}${dancerFoot(72,95,80,98)}
+        <text x="50" y="118" text-anchor="middle" font-size="8" fill="#999" font-style="italic">Grand plié</text>
+      </svg>`,
+
+    // Battement tendu - working leg extends, arms in 2nd
+    tendu:
+      `<svg viewBox="0 0 100 155" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,20,50,18,65)}
+        ${dancerArm(56,40,80,50,82,65)}
+        ${dancerBody(28,70)}
+        ${dancerTutu(70)}
+        ${dancerLeg(47,75,44,90,43,110)}
+        ${dancerLeg(53,75,65,88,78,105)}
+        ${dancerFoot(43,110,38,130)}${dancerFoot(78,105,84,125)}
+        <text x="50" y="118" text-anchor="middle" font-size="8" fill="#999" font-style="italic">Battement tendu</text>
+      </svg>`,
+
+    // Tendu devant - front
+    tenduDevant:
+      `<svg viewBox="0 0 100 155" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,20,52,18,68)}
+        ${dancerArm(56,40,80,52,82,68)}
+        ${dancerBody(28,70)}
+        ${dancerTutu(70)}
+        ${dancerLeg(47,75,44,90,43,110)}
+        ${dancerLeg(53,75,50,88,48,108)}
+        ${dancerFoot(43,110,38,130)}${dancerFoot(48,108,43,128)}
+        <text x="50" y="118" text-anchor="middle" font-size="7" fill="#999" font-style="italic">Tendu devant</text>
+      </svg>`,
+
+    // Tendu de côté - side
+    tenduSide:
+      `<svg viewBox="0 0 100 155" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,18,55,16,72)}
+        ${dancerArm(56,40,82,55,84,72)}
+        ${dancerBody(28,70)}
+        ${dancerTutu(70)}
+        ${dancerLeg(47,75,44,90,43,110)}
+        ${dancerLeg(53,75,68,88,80,105)}
+        ${dancerFoot(43,110,38,130)}${dancerFoot(80,105,86,122)}
+        <text x="50" y="118" text-anchor="middle" font-size="7" fill="#999" font-style="italic">Tendu de côté</text>
+      </svg>`,
+
+    // Tendu derrière - back (dashed leg)
+    tenduDerriere:
+      `<svg viewBox="0 0 100 155" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,18,55,16,72)}
+        ${dancerArm(56,40,82,55,84,72)}
+        ${dancerBody(28,70)}
+        ${dancerTutu(70)}
+        ${dancerLeg(47,75,44,90,43,110)}
+        ${dancerLeg(53,75,48,88,44,106)}
+        ${dancerFoot(43,110,38,130)}${dancerFoot(44,106,38,124)}
+        <text x="50" y="118" text-anchor="middle" font-size="7" fill="#999" font-style="italic">Tendu derrière</text>
+      </svg>`,
+
+    // 1st Arabesque - back leg extended, front arm at eye level
+    arabesque1:
+      `<svg viewBox="0 0 120 155" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,12,48,8,42)}
+        ${dancerArm(56,40,70,55,80,65)}
+        ${dancerBody(28,70)}
+        ${dancerTutu(70)}
+        ${dancerLeg(47,75,44,90,43,110)}
+        ${dancerLeg(53,75,58,88,62,100)}
+        ${dancerFoot(43,110,38,130)}${dancerFoot(62,100,70,95)}
+        <text x="60" y="118" text-anchor="middle" font-size="8" fill="#999" font-style="italic">1st Arabesque</text>
+      </svg>`,
+
+    // 2nd Arabesque - back leg extended, front arm at shoulder level
+    arabesque2:
+      `<svg viewBox="0 0 120 155" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,12,52,8,60)}
+        ${dancerArm(56,40,72,52,82,60)}
+        ${dancerBody(28,70)}
+        ${dancerTutu(70)}
+        ${dancerLeg(47,75,44,90,43,110)}
+        ${dancerLeg(53,75,58,90,64,100)}
+        ${dancerFoot(43,110,38,130)}${dancerFoot(64,100,74,96)}
+        <text x="60" y="118" text-anchor="middle" font-size="8" fill="#999" font-style="italic">2nd Arabesque</text>
+      </svg>`,
+
+    // Bras bas - preparatory arm position
+    brasBas:
+      `<svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,34,55,35,75)}
+        ${dancerArm(56,40,66,55,65,75)}
+        <ellipse cx="50" cy="62" rx="18" ry="10" fill="none" stroke="#e8a0b4" stroke-width="0.8"/>
+        ${dancerBody(28,66)}
+        ${dancerTutu(68)}
+        ${dancerLeg(47,73,45,88,44,108)}
+        ${dancerLeg(53,73,55,88,56,108)}
+        ${dancerFoot(44,108,42,122)}${dancerFoot(56,108,58,122)}
+        <text x="50" y="132" text-anchor="middle" font-size="8" fill="#999" font-style="italic">Bras bas</text>
+      </svg>`,
+
+    // Port de bras - carriage of the arms
+    portDeBras:
+      `<svg viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,20,45,12,38)}
+        ${dancerArm(56,40,82,50,88,60)}
+        ${dancerBody(28,66)}
+        ${dancerTutu(68)}
+        ${dancerLeg(47,73,45,88,44,108)}
+        ${dancerLeg(53,73,55,88,56,108)}
+        ${dancerFoot(44,108,42,122)}${dancerFoot(56,108,58,122)}
+        <text x="60" y="132" text-anchor="middle" font-size="8" fill="#999" font-style="italic">Port de bras</text>
+      </svg>`,
+
+    // Demi second - arms between bras bas and 2nd
+    demiSecond:
+      `<svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,28,52,26,62)}
+        ${dancerArm(56,40,72,52,74,62)}
+        ${dancerBody(28,66)}
+        ${dancerTutu(68)}
+        ${dancerLeg(47,73,45,88,44,108)}
+        ${dancerLeg(53,73,55,88,56,108)}
+        ${dancerFoot(44,108,42,122)}${dancerFoot(56,108,58,122)}
+        <text x="50" y="132" text-anchor="middle" font-size="8" fill="#999" font-style="italic">Demi 2nd</text>
+      </svg>`,
+
+    // Cou de pied devant - wrapped foot at front of ankle
+    couDePiedDevant:
+      `<svg viewBox="0 0 100 155" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,18,55,16,72)}
+        ${dancerArm(56,40,82,55,84,72)}
+        ${dancerBody(28,70)}
+        ${dancerTutu(70)}
+        ${dancerLeg(47,75,44,90,43,110)}
+        ${dancerLeg(53,75,52,82,46,85)}
+        ${dancerFoot(43,110,38,130)}
+        <circle cx="47" cy="83" r="2.5" fill="#d81b60"/>
+        <text x="50" y="118" text-anchor="middle" font-size="7" fill="#999" font-style="italic">Cou de pied devant</text>
+      </svg>`,
+
+    // Cou de pied derrière - wrapped foot at back of ankle
+    couDePiedDerriere:
+      `<svg viewBox="0 0 100 155" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,18,55,16,72)}
+        ${dancerArm(56,40,82,55,84,72)}
+        ${dancerBody(28,70)}
+        ${dancerTutu(70)}
+        ${dancerLeg(47,75,44,90,43,110)}
+        ${dancerLeg(53,75,56,82,50,85)}
+        ${dancerFoot(43,110,38,130)}
+        <circle cx="51" cy="83" r="2.5" fill="#d81b60"/>
+        <text x="50" y="118" text-anchor="middle" font-size="7" fill="#999" font-style="italic">Cou de pied derrière</text>
+      </svg>`,
+
+    // Retiré devant - toe at front of supporting knee
+    retireDevant:
+      `<svg viewBox="0 0 100 155" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,18,52,16,68)}
+        ${dancerArm(56,40,82,52,84,68)}
+        ${dancerBody(28,70)}
+        ${dancerTutu(70)}
+        ${dancerLeg(47,75,44,90,43,110)}
+        ${dancerLeg(53,75,52,82,47,80)}
+        ${dancerFoot(43,110,38,130)}
+        <circle cx="48" cy="81" r="2.5" fill="#d81b60"/>
+        <text x="50" y="118" text-anchor="middle" font-size="7" fill="#999" font-style="italic">Retiré devant</text>
+      </svg>`,
+
+    // Retiré derrière - toe at back of supporting knee
+    retireDerriere:
+      `<svg viewBox="0 0 100 155" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,18,52,16,68)}
+        ${dancerArm(56,40,82,52,84,68)}
+        ${dancerBody(28,70)}
+        ${dancerTutu(70)}
+        ${dancerLeg(47,75,44,90,43,110)}
+        ${dancerLeg(53,75,56,82,50,80)}
+        ${dancerFoot(43,110,38,130)}
+        <circle cx="51" cy="81" r="2.5" fill="#d81b60"/>
+        <text x="50" y="118" text-anchor="middle" font-size="7" fill="#999" font-style="italic">Retiré derrière</text>
+      </svg>`,
+
+    // Classical pose - slight arch, arms in 3rd
+    classicalPose:
+      `<svg viewBox="0 0 100 155" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,32,50,20,42)}
+        ${dancerArm(56,40,68,45,80,38)}
+        ${dancerBody(28,70)}
+        ${dancerTutu(70)}
+        ${dancerLeg(47,75,44,90,43,110)}
+        ${dancerLeg(53,75,49,88,46,108)}
+        ${dancerFoot(43,110,41,128)}${dancerFoot(46,108,43,124)}
+        <text x="50" y="118" text-anchor="middle" font-size="7" fill="#999" font-style="italic">Classical pose</text>
+      </svg>`,
+
+    // Wide 5th arms
+    wide5th:
+      `<svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,18,32,12,28)}
+        ${dancerArm(56,40,82,32,88,28)}
+        ${dancerBody(28,66)}
+        ${dancerTutu(68)}
+        ${dancerLeg(47,73,45,88,44,108)}
+        ${dancerLeg(53,73,55,88,56,108)}
+        ${dancerFoot(44,108,42,122)}${dancerFoot(56,108,58,122)}
+        <text x="50" y="132" text-anchor="middle" font-size="8" fill="#999" font-style="italic">Wide 5th</text>
+      </svg>`,
+
+    // Parallel 1st (6th position) - feet parallel
+    parallel1st:
+      `<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+        ${dancerLeg(47,30,46,60,45,80)}${dancerLeg(53,30,54,60,55,80)}
+        ${dancerFoot(45,80,42,98)}${dancerFoot(55,80,58,98)}
+        <text x="50" y="112" text-anchor="middle" font-size="8" fill="#999" font-style="italic">Parallel 1st</text>
+      </svg>`,
+
+    // Grand battement - high leg extension
+    grandBattement:
+      `<svg viewBox="0 0 100 155" xmlns="http://www.w3.org/2000/svg">
+        ${dancerBun()}${dancerHead()}
+        ${dancerArm(44,40,20,52,18,70)}
+        ${dancerArm(56,40,80,52,82,70)}
+        ${dancerBody(28,70)}
+        ${dancerTutu(70)}
+        ${dancerLeg(47,75,44,90,43,110)}
+        ${dancerLeg(53,75,52,80,50,62)}
+        ${dancerFoot(43,110,38,130)}${dancerFoot(50,62,48,55)}
+        <text x="50" y="118" text-anchor="middle" font-size="7" fill="#999" font-style="italic">Grand battement</text>
+      </svg>`,
+
+    // Relevé 5th - on demi-pointe in 5th position
+    releve5th:
+      `<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="42" cy="45" rx="6" ry="12" fill="none" stroke="#ad1457" stroke-width="1.5"/>
+        <ellipse cx="58" cy="45" rx="6" ry="12" fill="none" stroke="#ad1457" stroke-width="1.5"/>
+        <circle cx="42" cy="62" r="3.5" fill="#d81b60"/>
+        <circle cx="58" cy="62" r="3.5" fill="#d81b60"/>
+        <text x="50" y="95" text-anchor="middle" font-size="8" fill="#999" font-style="italic">Relevé 5th</text>
+      </svg>`,
+  };
+  return svgs[key] || null;
+}
+
+// ===== Render =====
+let currentTab = 'terminology';
+let currentSub = 'barre';
+
+function renderTerms(){
+  const barreEl = document.getElementById('term-barre');
+  const centreEl = document.getElementById('term-centre');
+  barreEl.innerHTML = renderTermGroups(termsBarre);
+  centreEl.innerHTML = renderTermGroups(termsCentre);
+}
+
+function renderTermGroups(groups){
+  return groups.map((g,i) => {
+    const id = 'tg-' + g.group.replace(/[^a-zA-Z0-9]/g,'').substring(0,20) + '-' + i;
+    const extId = 'ext-' + id;
+    const extensions = termExtensions[g.group];
+    let extHtml = '';
+    if(extensions && extensions.length > 0){
+      extHtml = `
+      <div class="ext-section">
+        <div class="ext-header" onclick="event.stopPropagation(); toggleSection('${extId}')">
+          <span class="ext-arrow">▶</span>
+          <span class="ext-label">📚 拓展</span>
+        </div>
+        <div class="ext-body collapsed" id="${extId}">
+          <div class="ext-grid">
+            ${extensions.map(ext => {
+              const etext = ext.fr.replace(/\s*\(.*?\)\s*/g,' ').replace(/[\/]/g,' ').trim();
+              return `
+              <div class="ext-card">
+                <div class="ext-fr">${ext.fr}</div>
+                <div class="ext-zh">${ext.zh}</div>
+                <div class="ext-note">💡 ${ext.note}</div>
+                <div class="term-actions">
+                  <button onclick="speakFrench('${escapeHtml(etext)}', this, 0.75)">🔊 发音</button>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>`;
+    }
+    return `
+    <div class="section-header" onclick="toggleSection('${id}')">
+      <span class="arrow">▼</span>
+      <h2>${g.group}</h2>
+      <span class="beat-speak" onclick="event.stopPropagation();speakFrench('${escapeHtml(g.group.replace(/ — .*/,''))}', this, 0.75)" title="朗读组名" style="font-size:0.9rem;opacity:0.7;">🔊</span>
+    </div>
+    <div class="section-body" id="${id}">
+      <div class="term-grid">
+        ${g.items.map(item => renderTermCard(item)).join('')}
+      </div>
+      ${extHtml}
+    </div>`;
+  }).join('');
+}
+
+function renderTermCard(item){
+  const textForSpeech = item.fr.replace(/\s*\(.*?\)\s*/g,' ').replace(/[\/]/g,' ').trim();
+  const searchQuery = encodeURIComponent('芭蕾 ' + item.fr + ' 动作讲解');
+  return `
+  <div class="term-card">
+    <div class="fr-word">${item.fr}</div>
+    <div class="zh-word">${item.zh}</div>
+    ${item.desc ? `<div class="term-desc">${item.desc}</div>` : ''}
+    <div class="term-actions">
+      <button onclick="speakFrench('${escapeHtml(textForSpeech)}', this, 0.75)" title="听发音">🔊 发音</button>
+    </div>
+    <div class="term-links">
+      <a href="https://search.bilibili.com/all?keyword=${searchQuery}" target="_blank" rel="noopener" class="term-link-bl">📺 B站</a>
+      <a href="https://www.youtube.com/results?search_query=${encodeURIComponent('ballet '+item.fr+' tutorial')}" target="_blank" rel="noopener" class="term-link-yt">🎬 YouTube</a>
+    </div>
+  </div>`;
+}
+
+function renderCombos(){
+  const barreEl = document.getElementById('combo-barre');
+  const centreEl = document.getElementById('combo-centre');
+  barreEl.innerHTML = combosBarre.map(c => renderComboCard(c)).join('');
+  centreEl.innerHTML = combosCentre.map(c => renderComboCard(c)).join('');
+}
+
+function renderComboCard(c){
+  const tableId = 'bt-' + c.id;
+  const comboCn = comboNameCn[c.name] || '';
+  const commenceCn = translateCommence(c.commence);
+  return `
+  <div class="combo-card">
+    <h3>
+      ${c.id}: ${c.name}${comboCn ? ' <small style="font-weight:400;color:#888">('+comboCn+')</small>' : ''}
+      <span class="beat-speak" onclick="event.stopPropagation();speakFrench('${escapeHtml(c.name)}', this, 0.75)" title="朗读组合名">🔊</span>
+    </h3>
+    <div class="combo-meta">
+      <strong>开始姿势：</strong>${c.commence}
+      <span class="beat-speak" onclick="event.stopPropagation();smartSpeak('${escapeHtml(c.commence)}', this)" title="朗读开始姿势">🔊</span>
+      <span style="color:#888;font-size:0.78rem;margin-left:4px;">${commenceCn}</span><br>
+      <strong>前奏：</strong>${c.intro} &nbsp;|&nbsp; <strong>表演：</strong>${c.perform}
+    </div>
+    <button class="beat-toggle" onclick="toggleSection('${tableId}')">
+      📋 节拍分解表 <span class="arrow2">▼</span>
+    </button>
+    <div class="beat-table-wrap collapsed" id="${tableId}">
+      <div style="overflow-x:auto;">
+      <table class="beat-table">
+        <thead><tr><th>Counts</th><th>Legs & Body</th><th>Arms & Head</th></tr></thead>
+        <tbody>
+          ${c.rows.map(r => {
+            const legsHint = addCnHints(r[1]);
+            const armsHint = addCnHints(r[2]);
+            return `
+            <tr>
+              <td class="counts">${r[0]}</td>
+              <td>${cellWithSpeaker(r[1])}${legsHint}</td>
+              <td>${cellWithSpeaker(r[2])}${armsHint}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+    <div class="video-links">
+      <a class="bl-btn" href="https://search.bilibili.com/all?keyword=${encodeURIComponent('英皇芭蕾 Grade 3 ' + c.name)}" target="_blank" rel="noopener">
+        📺 B站
+      </a>
+      <a class="yt-btn" href="https://www.youtube.com/results?search_query=${encodeURIComponent('RAD Grade 3 ' + c.name)}" target="_blank" rel="noopener">
+        🎬 YouTube
+      </a>
+    </div>
+  </div>`;
+}
+
+function cellWithSpeaker(text){
+  if(!text || text==='—') return '—';
+  const t = text.replace(/['"]/g,'').replace(/<[^>]*>/g,'');
+  return `${text}<span class="beat-speak" onclick="event.stopPropagation();smartSpeak('${escapeHtml(t)}', this)" title="朗读">🔊</span>`;
+}
+
+function speakEnglish(text, btn){
+  if(window._speaking){ speechSynthesis.cancel(); window._speaking = null; }
+  document.querySelectorAll('.playing').forEach(b => b.classList.remove('playing'));
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-GB'; u.rate = 0.9;
+  const voices = speechSynthesis.getVoices();
+  const enVoice = voices.find(v => v.lang.startsWith('en-GB')) || voices.find(v => v.lang.startsWith('en'));
+  if(enVoice) u.voice = enVoice;
+  if(btn){ btn.classList.add('playing'); u.onend = u.onerror = () => { btn.classList.remove('playing'); window._speaking = null; }; }
+  window._speaking = u;
+  speechSynthesis.speak(u);
+}
+
+// ===== MyMemory Translation API =====
+const transCache = {};
+
+async function fetchMyMemory(text, fromLang, toLang){
+  if(transCache[text]) return transCache[text];
+  try {
+    const resp = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${fromLang}|${toLang}`);
+    const data = await resp.json();
+    if(data.responseStatus === 200 && data.responseData.translatedText){
+      const translated = data.responseData.translatedText.trim();
+      transCache[text] = translated;
+      return translated;
+    }
+  } catch(e){ console.warn('MyMemory fetch failed:', e); }
+  transCache[text] = '';
+  return '';
+}
+
+async function preTranslateAll(){
+  // Pre-translate all commence texts (EN->ZH)
+  const allCombos = [...combosBarre, ...combosCentre];
+  const commenceTexts = [...new Set(allCombos.map(c => c.commence))];
+  const promises = commenceTexts.map(text => fetchMyMemory(text, 'en', 'zh-CN'));
+  await Promise.all(promises);
+
+  // If translations worked, re-render combos
+  const hasTranslations = Object.values(transCache).some(v => v);
+  if(hasTranslations){
+    renderCombos();
+    updateSubVisibility();
+    // Re-init arrow states for new beat tables
+    document.querySelectorAll('.beat-table-wrap.collapsed, .ext-body.collapsed').forEach(el => {
+      const trigger = el.previousElementSibling;
+      if(trigger){
+        const arrow = trigger.querySelector('.arrow2, .ext-arrow');
+        if(arrow) arrow.style.transform = 'rotate(-90deg)';
+      }
+    });
+  }
+}
+
+function translateCommence(text){
+  // Check MyMemory cache first
+  if(transCache[text]) return transCache[text];
+  // Fallback to manual map
+  const map = {
+    'Sideways to barre':'侧对把杆',
+    'Facing barre':'面对把杆',
+    'Upstage centre':'后舞台中央',
+    'En face':'面向观众（正前）',
+    'Bras bas':'准备位手',
+    'right foot derrière':'右脚在后',
+    'left foot derrière':'左脚在后',
+    'right foot devant':'右脚在前',
+    'left foot devant':'左脚在前',
+    '3rd position':'三位脚',
+    '1st position':'一位脚',
+    '5th position':'五位脚',
+    'Parallel 1st':'平行一位脚',
+    'Classical pose':'古典舞姿',
+    'Corner 8':'8号角',
+    'near corner 7':'靠近7号角',
+    'Facing 5':'面向5点',
+    'Facing 6':'面向6点',
+    'Facing 1':'面向1点',
+    'Arms relaxed by sides':'手臂自然下垂',
+    'Both arms bras bas':'双手准备位',
+    'downstage foot devant':'前舞台脚在前',
+    'upstage centre or between centre and 8':'后舞台中央或中央与8点之间',
+    'Centre Facing 5':'中央面向5点',
+    'Either foot devant':'任意脚在前',
+    'either foot devant':'任意脚在前',
+    'Examiner\'s choice of rond de jambe en dehors or en dedans':'考官选择向外或向内划圈',
+  };
+  return text.split(', ').map(p => map[p.trim()] || '').filter(Boolean).join('，');
+}
+
+// ===== Combo name Chinese translations =====
+const comboNameCn = {
+  'Pliés':'屈膝蹲',
+  'Battements tendus and battements glissés':'擦地与小踢腿',
+  'Battements fondus and développés devant':'单腿蹲与前控腿',
+  'Grands battements devant':'向前大踢腿',
+  'Grands battements to second and derrière':'向旁向后大踢腿',
+  'Port de bras':'手臂运行',
+  'Ronds de jambe à terre':'地面划圈',
+  'Adage':'慢板控制',
+  'Sautés and changements':'小跳与换脚跳',
+  'Glissades, sissonnes and assemblés':'滑步、分腿跳与集中跳',
+  'Turns':'旋转',
+  'Grand allegro':'大跳',
+  'Dance A — female':'舞蹈A — 女',
+};
+
+// ===== Chinese term hints for beat tables (v2: French-first detection) =====
+// French term → Chinese translation map
+const frToCn = {
+  // Actions
+  'plié':'屈膝','demi-plié':'半蹲','grand plié':'全蹲',
+  'battement tendu':'擦地','battement glissé':'小踢腿',
+  'battement fondu':'单腿蹲','grand battement':'大踢腿',
+  'développé':'控腿','relevé':'立半脚尖','échappé sauté':'分合跳',
+  'changement':'换脚跳','glissade':'滑步','sissonne':'分腿跳',
+  'assemblé':'集中跳','posé':'上步','temps levé':'单腿跳',
+  'chassé':'追步','balancé':'摇摆步','jeté':'抛跳',
+  'détourné':'转身','galop':'加洛普步','élancé':'冲步',
+  'retiré':'吸腿','attitude':'阿提秋','arabesque':'阿拉贝斯克',
+  'rond de jambe':'划圈','port de bras':'手臂运行',
+  'pas de bourrée':'插秧步','petit développé':'小控腿',
+  // Direction/position
+  'devant':'前','derrière':'后','de côté':'向旁',
+  'en croix':'十字交叉','en dehors':'向外','en dedans':'向内',
+  'en avant':'向前','dessus':'覆盖','dessous':'下方',
+  'dégagé':'点地','cou de pied':'脚脖子',
+  'demi-pointe':'半脚尖','demi-seconde':'小二位手','demi-bras':'半臂位',
+  'bras bas':'准备位手','demi second':'小二位手',
+  'classical pose':'古典舞姿','classical walks':'古典行走步',
+  'en fondu':'半蹲状态','à la seconde':'向旁',
+  // Positions
+  '1st arabesque':'第一阿拉贝斯克','2nd arabesque':'第二阿拉贝斯克',
+  'parallel 1st':'平行一位','natural 1st':'自然一位','wide 5th':'宽五位',
+};
+
+// English ballet direction → Chinese
+const enToCn = [
+  ['transfer weight forward to','重心前移至'],
+  ['transfer weight forward','重心前移'],
+  ['transfer weight','重心转移'],
+  ['transfer of weight','重心转移'],
+  ['small steps on demi-pointe','半脚尖碎步'],
+  ['small steps','碎步'],
+  ['demi-pointe','半脚尖'],
+  ['straightening legs','伸直膝盖'],
+  ['straighten legs','伸直膝盖'],
+  ['straightening supporting leg','伸直主力腿'],
+  ['supporting leg','主力腿'],
+  ['place hands on barre','双手扶把杆'],
+  ['place hand on barre','手扶把杆'],
+  ['arm open sideways','手臂向旁打开'],
+  ['arm through','手臂经过'],
+  ['arm to bras bas','手臂落准备位'],
+  ['arms to bras bas','手臂落准备位'],
+  ['arms bras bas','双手准备位'],
+  ['arms to 1st','手臂至一位'],
+  ['arms to 2nd','手臂至二位'],
+  ['arms 2nd','手臂二位'],
+  ['arms 1st','手臂一位'],
+  ['arm to 1st','手臂至一位'],
+  ['arm to 2nd','手臂至二位'],
+  ['arm 2nd','手臂二位'],
+  ['arms through','手臂经'],
+  ['arms free','手臂自由'],
+  ['head follows hand','头随手动'],
+  ['head to barre','头转向把杆'],
+  ['head to centre','头回正前方'],
+  ['head to raised arm','头看高臂'],
+  ['head over front arm','头看前臂'],
+  ['head erect','头摆正'],
+  ['head to','头转向'],
+  ['face barre','面对把杆'],
+  ['face other side','转向另一侧'],
+  ['repeat to other side','换边重复'],
+  ['repeat all','全部重复'],
+  ['repeat','重复'],
+  ['close 3rd straightening legs','收三位伸直膝盖'],
+  ['close 3rd devant','收三位脚前'],
+  ['close 3rd derrière','收三位脚后'],
+  ['close 3rd','收三位脚'],
+  ['close 5th devant','收五位脚前'],
+  ['close 5th','收五位脚'],
+  ['close 1st','收一位脚'],
+  ['close right foot','收右脚'],
+  ['close left foot','收左脚'],
+  ['lower into 3rd','落三位脚'],
+  ['lower in 1st','落一位脚'],
+  ['rise and lower','立半脚尖再落'],
+  ['rise and','立半脚尖'],
+  ['rise','立半脚尖'],
+  ['lower','落脚跟'],
+  ['hold','保持不动'],
+  ['step forward onto','向前迈步至'],
+  ['step forward into','向前迈步成'],
+  ['step forward','向前迈步'],
+  ['step back into','向后迈步成'],
+  ['step back','向后迈步'],
+  ['step to right','向右迈步'],
+  ['step to left','向左迈步'],
+  ['step','迈步'],
+  ['run forward','向前跑'],
+  ['run','跑'],
+  ['walk forward','向前行走'],
+  ['walks','行走'],
+  ['jump into','跳至'],
+  ['jump','跳'],
+  ['hop','单脚跳'],
+  ['leap','大跳'],
+  ['spring points','弹跳点地'],
+  ['spring','弹跳'],
+  ['turn','转'],
+  ['brush through','擦地经过'],
+  ['brush','擦地'],
+  ['open sideways','向旁打开'],
+  ['open','打开'],
+  ['close','收回'],
+  ['through','经过'],
+  ['towards','朝向'],
+  ['toward','朝向'],
+  ['across','穿越'],
+  ['behind','身后'],
+  ['in front','身前'],
+  ['raised','抬起'],
+  ['lowering','落下'],
+  ['erect','直立'],
+  ['soft','柔和地'],
+  ['free','自由'],
+  ['relaxed','放松的'],
+];
+
+function addCnHints(text){
+  if(!text || text==='—') return '';
+  const displayed = [];
+
+  // 1. French terms first — detect using our French span detector
+  const frSpans = detectFrenchSpans(text);
+  for(const [s,e] of frSpans){
+    const frText = text.slice(s, e).toLowerCase().trim();
+    // Direct match
+    if(frToCn[frText]){ displayed.push(frToCn[frText]); continue; }
+    // Try removing trailing 's' for plural
+    const singular = frText.replace(/s$/,'');
+    if(frToCn[singular]){ displayed.push(frToCn[singular]); continue; }
+    // Try key word match
+    for(const [k,v] of Object.entries(frToCn)){
+      if(frText.includes(k) && k.length > 4){ displayed.push(v); break; }
+    }
+  }
+
+  // 2. English ballet terms
+  const lower = text.toLowerCase();
+  const enHints = [];
+  for(const [en,cn] of enToCn){
+    if(lower.includes(en.toLowerCase())){
+      enHints.push({en,cn});
+    }
+  }
+  // Dedup: remove sub-phrase matches where longer match covers same concept
+  const filtered = enHints.filter((h,i) => {
+    for(let j=0; j<enHints.length; j++){
+      if(i!==j && enHints[j].en.length > h.en.length && enHints[j].en.toLowerCase().includes(h.en.toLowerCase())){
+        return false;
+      }
+    }
+    return true;
+  });
+  for(const h of filtered){
+    if(!displayed.includes(h.cn)) displayed.push(h.cn);
+  }
+
+  // Limit to 5 hints max, French first
+  const result = displayed.slice(0, 5);
+  return result.length ? '<span class="cn-hint">' + result.join(' · ') + '</span>' : '';
+}
+
+// ===== Section toggle =====
+function toggleSection(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  const isCollapsed = el.classList.contains('collapsed');
+  if(isCollapsed){
+    el.classList.remove('collapsed');
+  } else {
+    el.classList.add('collapsed');
+  }
+  // Update arrow in the trigger element (previous sibling: header or button)
+  const trigger = el.previousElementSibling;
+  if(trigger){
+    const arrow = trigger.querySelector('.arrow, .arrow2, .ext-arrow');
+    if(arrow){
+      arrow.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(-90deg)';
+    }
+  }
+}
+
+// ===== French TTS =====
+let currentUtterance = null;
+function speakFrench(text, btn, rate){
+  if(currentUtterance){
+    speechSynthesis.cancel();
+    currentUtterance = null;
+  }
+  // Remove currently playing states
+  document.querySelectorAll('.playing').forEach(b => b.classList.remove('playing'));
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'fr-FR';
+  utterance.rate = rate || 0.85;
+  utterance.pitch = 1.0;
+
+  // Try to find a French voice
+  const voices = speechSynthesis.getVoices();
+  const frVoice = voices.find(v => v.lang.startsWith('fr'));
+  if(frVoice) utterance.voice = frVoice;
+
+  if(btn){
+    btn.classList.add('playing');
+    utterance.onend = () => { btn.classList.remove('playing'); currentUtterance = null; };
+    utterance.onerror = () => { btn.classList.remove('playing'); currentUtterance = null; };
+  }
+  currentUtterance = utterance;
+  speechSynthesis.speak(utterance);
+}
+
+// Preload voices
+speechSynthesis.onvoiceschanged = () => {};
+
+// ===== Mixed French/English TTS (v2: phrase-first detection, minimal segments) =====
+
+// Multi-word French ballet phrases — longest first for greedy matching
+const FR_PHRASES = [
+  // Position & direction phrases
+  'pas de bourrée dessous','pas de bourrée dessus',
+  'rond de jambe à terre','rond de jambe en l\'air',
+  'battement tendu en croix','battement tendu devant',
+  'battement tendu de côté','battement tendu derrière',
+  'battement glissé devant','battement glissé de côté',
+  'battement glissé derrière','battement glissé en croix',
+  'battement fondu to dégagé devant','battement fondu to dégagé',
+  'grand battement devant','grand battement de côté',
+  'grand battement derrière','grand battement to 2nd',
+  'grand battement devant to dégagé',
+  'grand battement derrière to dégagé',
+  'grand battement to 2nd to dégagé',
+  'développé devant and close','développé à la seconde',
+  'développé arabesque','petit développé passé',
+  'petit développé to dégagé',
+  'posé temps levé','posé en avant',
+  'temps levé in attitude devant',
+  'temps levé in retiré derrière',
+  'sissonne fermée de côté dessus','sissonne ouverte',
+  'échappé sauté fermé to 3rd','échappé sauté to 2nd',
+  'assemblé dessus','assemblé dessous',
+  'glissade derrière','glissade devant',
+  'port de bras to 2nd','basic port de bras',
+  'grand plié in 2nd','grand plié',
+  'en dehors','en dedans','en croix','en fondu',
+  'de côté','en avant','à la seconde',
+  'cou de pied devant','cou de pied derrière',
+  'dégagé devant','dégagé derrière','dégagé to 2nd',
+  'arabesque line','1st arabesque','2nd arabesque',
+  'classical pose','classical walks',
+  'bras bas on count','both arms bras bas',
+  'arm to bras bas','free arm to bras bas',
+  'arms bras bas','bras bas',
+  'port de bras','demi-pointe','demi-pointes',
+  'demi-seconde','demi-bras','demi-plié',
+  'demi détourné','demi second',
+  'retiré devant','retiré derrière',
+  'attitude devant','attitude derrière',
+  'relevés in 5th','relevé in 5th',
+  'close 3rd devant','close 3rd derrière',
+  'lower into 3rd','lower in 1st',
+  'parallel 1st','natural 1st',
+  'wide 5th','galop preparation',
+  'grand allegro','petit allegro',
+  'posé de côté','posés de côté',
+  'petits jetés derrière','petit jeté',
+];
+
+// Single French ballet words — only words unambiguous in ballet context
+const FR_WORDS = new Set([
+  'plié','pliés','tendu','tendus','glissé','glissés',
+  'fondu','fondus','développé','développés','relevé','relevés',
+  'échappé','sauté','sautés','changement','changements',
+  'glissade','glissades','sissonne','sissonnes','assemblé','assemblés',
+  'arabesque','arabesques','adage','adagio','allégro',
+  'retiré','attitude','posé','posés','chassé','balancé','balancés',
+  'jeté','jetés','pirouette','fouetté','piqué','détourné',
+  'épaulement','révérence','ballonné','ballotté','contretemps','brisé',
+  'entrechat','promenade','penché','enveloppé','soubresaut',
+  'tombé','failli','coupé','cabriole','balançoire',
+  'dessus','dessous','devant','derrière','dehors','dedans',
+  'battement','battements','dégagé','dégagés',
+  'rond','bourrée','galop','galops','croix',
+  'cinquième','quatrième','troisième','deuxième','première',
+  'seconde','ouvert','ouverte','fermé','fermée',
+  'barre','barres',
+]);
+
+// Sort phrases longest-first so greedy matching catches longer phrases first
+FR_PHRASES.sort((a,b) => b.length - a.length);
+
+function isWordBoundary(ch){
+  // A word boundary is: start/end of string, space, punctuation, or digit
+  if(ch === undefined) return true;
+  return /[\s.,;:!?()\-—–'"\/&|]/.test(ch) || /\d/.test(ch);
+}
+
+function detectFrenchSpans(text){
+  // Returns sorted array of [start, end] character spans that are French
+  const lower = text.toLowerCase();
+  const spans = [];
+
+  // 1. Multi-word phrase detection (longest-first greedy)
+  for(const phrase of FR_PHRASES){
+    let idx = 0;
+    while(idx < lower.length){
+      const pos = lower.indexOf(phrase, idx);
+      if(pos === -1) break;
+      // Check word boundaries
+      const beforeCh = pos === 0 ? undefined : lower[pos-1];
+      const afterCh = pos+phrase.length >= lower.length ? undefined : lower[pos+phrase.length];
+      const beforeOk = pos === 0 || isWordBoundary(beforeCh);
+      const afterOk = afterCh === undefined || isWordBoundary(afterCh);
+      if(beforeOk && afterOk){
+        spans.push([pos, pos+phrase.length]);
+        idx = pos + phrase.length;
+      } else {
+        idx = pos + 1;
+      }
+    }
+  }
+
+  // 2. Single-word detection (only in gaps between phrase spans)
+  spans.sort((a,b) => a[0]-b[0]);
+  const wordRegex = /[a-zA-ZàâäéèêëîïôöùûüçœÀÂÄÉÈÊËÎÏÔÖÙÛÜÇŒ]+/g;
+  let match;
+  while((match = wordRegex.exec(text)) !== null){
+    const w = match[0];
+    const wLower = w.toLowerCase();
+    // Skip if this word is inside an existing phrase span
+    const wordStart = match.index;
+    const wordEnd = match.index + w.length;
+    const insidePhrase = spans.some(([s,e]) => s <= wordStart && e >= wordEnd);
+    if(insidePhrase) continue;
+    // Check if it's a French word or has French accents
+    if(FR_WORDS.has(wLower) || /[éèêëàâîïôûùçœ]/i.test(w)){
+      spans.push([wordStart, wordEnd]);
+    }
+  }
+
+  // Merge overlapping spans
+  spans.sort((a,b) => a[0]-b[0]);
+  const merged = [];
+  for(const [s,e] of spans){
+    if(merged.length && s <= merged[merged.length-1][1]){
+      merged[merged.length-1][1] = Math.max(merged[merged.length-1][1], e);
+    } else {
+      merged.push([s,e]);
+    }
+  }
+  return merged;
+}
+
+function smartSpeak(text, btn){
+  if(window._speaking){ speechSynthesis.cancel(); window._speaking = null; }
+  document.querySelectorAll('.playing').forEach(b => b.classList.remove('playing'));
+  if(btn) btn.classList.add('playing');
+
+  const voices = speechSynthesis.getVoices();
+  // Prefer same-gender voices: try female first (most common)
+  const frVoice = voices.find(v => v.lang.startsWith('fr-FR') && v.name.includes('Female'))
+    || voices.find(v => v.lang.startsWith('fr-FR'))
+    || voices.find(v => v.lang.startsWith('fr'));
+  const enVoice = voices.find(v => v.lang.startsWith('en-GB') && v.name.includes('Female'))
+    || voices.find(v => v.lang.startsWith('en-GB'))
+    || voices.find(v => v.lang.startsWith('en'));
+
+  const frSpans = detectFrenchSpans(text);
+
+  // Build segments based on character spans
+  const segments = [];
+  let cursor = 0;
+
+  if(frSpans.length === 0){
+    segments.push({text: text.trim(), lang: 'en'});
+  } else {
+    for(const [s,e] of frSpans){
+      // English text before this French span
+      if(cursor < s){
+        const enText = text.slice(cursor, s).trim();
+        if(enText) segments.push({text: enText, lang: 'en'});
+      }
+      // French span
+      const frText = text.slice(s, e).trim();
+      if(frText) segments.push({text: frText, lang: 'fr'});
+      cursor = e;
+    }
+    // Remaining English after last French span
+    if(cursor < text.length){
+      const enText = text.slice(cursor).trim();
+      if(enText) segments.push({text: enText, lang: 'en'});
+    }
+  }
+
+  if(segments.length === 0){
+    if(btn) btn.classList.remove('playing');
+    return;
+  }
+
+  // Speak segments sequentially
+  let idx = 0;
+  function speakNext(){
+    if(idx >= segments.length){
+      if(btn) btn.classList.remove('playing');
+      window._speaking = null;
+      return;
+    }
+    const seg = segments[idx];
+    const u = new SpeechSynthesisUtterance(seg.text);
+    const isFr = seg.lang === 'fr';
+    u.lang = isFr ? 'fr-FR' : 'en-GB';
+    u.rate = isFr ? 0.75 : 0.9;
+    u.pitch = 1.0;
+    if(isFr && frVoice) u.voice = frVoice;
+    if(!isFr && enVoice) u.voice = enVoice;
+    u.onend = () => { idx++; speakNext(); };
+    u.onerror = () => { idx++; speakNext(); };
+    window._speaking = u;
+    speechSynthesis.speak(u);
+  }
+  speakNext();
+}
+
+// ===== Tab switching =====
+function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.nav-tabs button[data-tab="${tab}"]`).classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+
+  // Show appropriate sub-tabs
+  const subEl = document.getElementById('subTabs');
+  if(tab === 'terminology' || tab === 'combinations'){
+    subEl.style.display = 'flex';
+  }
+  updateSubVisibility();
+}
+
+function switchSub(sub){
+  currentSub = sub;
+  document.querySelectorAll('.sub-tabs button').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.sub-tabs button[data-sub="${sub}"]`).classList.add('active');
+  updateSubVisibility();
+}
+
+function updateSubVisibility(){
+  const barreTerm = document.getElementById('term-barre');
+  const centreTerm = document.getElementById('term-centre');
+  const barreCombo = document.getElementById('combo-barre');
+  const centreCombo = document.getElementById('combo-centre');
+
+  if(currentTab === 'terminology'){
+    barreTerm.style.display = currentSub === 'barre' ? 'block' : 'none';
+    centreTerm.style.display = currentSub === 'centre' ? 'block' : 'none';
+  } else {
+    barreCombo.style.display = currentSub === 'barre' ? 'block' : 'none';
+    centreCombo.style.display = currentSub === 'centre' ? 'block' : 'none';
+  }
+}
+
+// ===== Toast =====
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ===== Escape HTML =====
+function escapeHtml(str){
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ===== Init =====
+document.querySelectorAll('.nav-tabs button').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+document.querySelectorAll('.sub-tabs button').forEach(btn => {
+  btn.addEventListener('click', () => switchSub(btn.dataset.sub));
+});
+
+renderTerms();
+renderCombos();
+updateSubVisibility();
+
+// Set initial arrow states for collapsed beat tables and ext bodies
+document.querySelectorAll('.beat-table-wrap.collapsed, .ext-body.collapsed').forEach(el => {
+  const trigger = el.previousElementSibling;
+  if(trigger){
+    const arrow = trigger.querySelector('.arrow2, .ext-arrow');
+    if(arrow) arrow.style.transform = 'rotate(-90deg)';
+  }
+});
+
+// Async: pre-translate commence texts via MyMemory API
+preTranslateAll();
+
+</script>
+</body>
+</html>
