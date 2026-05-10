@@ -1569,24 +1569,117 @@ function toggleSection(id){
   }
 }
 
-// ===== French TTS =====
+// ===== Platform-aware TTS voice selection =====
 let currentUtterance = null;
+let _voicesCache = null;
+let _platform = null;
+
+function getPlatform(){
+  if(_platform) return _platform;
+  const ua = navigator.userAgent || '';
+  if(/iPhone|iPad|iPod/.test(ua)) _platform = 'ios';
+  else if(/Android/.test(ua)) _platform = 'android';
+  else _platform = 'desktop';
+  return _platform;
+}
+
+function getVoices(){
+  // Refresh cache each call — voices can change (e.g. iOS downloads premium voices on first use)
+  const raw = speechSynthesis.getVoices();
+  if(!raw || raw.length === 0) return _voicesCache || [];
+  _voicesCache = raw;
+  return raw;
+}
+
+function getBestVoice(langPrefix, preferFemale){
+  // Returns the best available voice for a language, accounting for mobile quirks
+  const voices = getVoices();
+  const platform = getPlatform();
+  const langLow = langPrefix.toLowerCase();
+
+  // Filter voices matching the language
+  const matching = voices.filter(v => {
+    const vl = (v.lang || '').toLowerCase();
+    return vl.startsWith(langLow);
+  });
+
+  if(matching.length === 0) return null;
+
+  if(platform === 'ios'){
+    // iOS: localService=true voices are premium system voices
+    // localService=false are robotic/network voices — avoid these
+    const localVoices = matching.filter(v => v.localService === true);
+    const candidates = localVoices.length > 0 ? localVoices : matching;
+
+    // Prefer enhanced/premium/high-quality named voices
+    const premium = candidates.filter(v =>
+      /(premium|enhanced|siri|amelie|thomas|marie|jeanne|daniel|caroline|audrey|aurelie|jacques|louis|olivier|monica|karen|samantha|daniel|tessa|alex|tom|allison|ava|susan|serena)/i.test(v.name)
+    );
+    const pool = premium.length > 0 ? premium : candidates;
+
+    // Gender preference
+    if(preferFemale){
+      const female = pool.find(v => /(female|amelie|marie|jeanne|caroline|audrey|aurelie|samantha|karen|monica|tessa|allison|ava|susan|serena)/i.test(v.name));
+      if(female) return female;
+    }
+    return pool[0];
+  }
+
+  if(platform === 'android'){
+    // Android: Google TTS voices are dramatically better than Samsung/OEM voices
+    const googleVoices = matching.filter(v => /google/i.test(v.name));
+    const candidates = googleVoices.length > 0 ? googleVoices : matching;
+
+    // Prefer higher-quality named voices, avoid generic locale-only ones
+    const named = candidates.filter(v => v.name && v.name.length > 3 && !/^(fr|en)[-_]/i.test(v.name));
+    const pool = named.length > 0 ? named : candidates;
+
+    if(preferFemale){
+      const female = pool.find(v => /(female|femme|woman)/i.test(v.name));
+      if(female) return female;
+    }
+    return pool[0];
+  }
+
+  // Desktop (macOS/Windows/ChromeOS): all voices are generally decent
+  // macOS has premium voices (Amélie, Thomas, Samantha, Daniel, etc.)
+  const named = matching.filter(v => v.name && v.name.length > 2);
+  const pool = named.length > 0 ? named : matching;
+
+  // Prefer local (built-in) voices over remote
+  const local = pool.filter(v => v.localService !== false);
+  const candidates = local.length > 0 ? local : pool;
+
+  if(preferFemale){
+    const female = candidates.find(v =>
+      /(female|amelie|marie|jeanne|caroline|audrey|aurelie|samantha|karen|monica|tessa|allison|ava|susan|serena|kate|fiona|moira|veena|alice)/i.test(v.name)
+    );
+    if(female) return female;
+  }
+  return candidates[0];
+}
+
+// Preload voices on desktop (voices may load async)
+speechSynthesis.onvoiceschanged = () => { getVoices(); };
+// Trigger initial load
+try { speechSynthesis.getVoices(); } catch(e) {}
+
+// ===== French TTS (pure French only) =====
 function speakFrench(text, btn, rate){
   if(currentUtterance){
     speechSynthesis.cancel();
     currentUtterance = null;
   }
-  // Remove currently playing states
   document.querySelectorAll('.playing').forEach(b => b.classList.remove('playing'));
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'fr-FR';
-  utterance.rate = rate || 0.85;
+  const platform = getPlatform();
+  // Mobile: slightly slower for clarity
+  utterance.rate = rate || (platform === 'desktop' ? 0.85 : 0.75);
   utterance.pitch = 1.0;
 
-  // Try to find a French voice
-  const voices = speechSynthesis.getVoices();
-  const frVoice = voices.find(v => v.lang.startsWith('fr'));
+  const frVoice = getBestVoice('fr', true);
   if(frVoice) utterance.voice = frVoice;
 
   if(btn){
@@ -1597,9 +1690,6 @@ function speakFrench(text, btn, rate){
   currentUtterance = utterance;
   speechSynthesis.speak(utterance);
 }
-
-// Preload voices
-speechSynthesis.onvoiceschanged = () => {};
 
 // ===== Mixed French/English TTS (v2: phrase-first detection, minimal segments) =====
 
@@ -1744,14 +1834,8 @@ function smartSpeak(text, btn){
   document.querySelectorAll('.playing').forEach(b => b.classList.remove('playing'));
   if(btn) btn.classList.add('playing');
 
-  const voices = speechSynthesis.getVoices();
-  // Prefer same-gender voices: try female first (most common)
-  const frVoice = voices.find(v => v.lang.startsWith('fr-FR') && v.name.includes('Female'))
-    || voices.find(v => v.lang.startsWith('fr-FR'))
-    || voices.find(v => v.lang.startsWith('fr'));
-  const enVoice = voices.find(v => v.lang.startsWith('en-GB') && v.name.includes('Female'))
-    || voices.find(v => v.lang.startsWith('en-GB'))
-    || voices.find(v => v.lang.startsWith('en'));
+  const frVoice = getBestVoice('fr', true);
+  const enVoice = getBestVoice('en', true);
 
   const frSpans = detectFrenchSpans(text);
 
@@ -1796,8 +1880,10 @@ function smartSpeak(text, btn){
     const seg = segments[idx];
     const u = new SpeechSynthesisUtterance(seg.text);
     const isFr = seg.lang === 'fr';
+    const platform = getPlatform();
     u.lang = isFr ? 'fr-FR' : 'en-GB';
-    u.rate = isFr ? 0.75 : 0.9;
+    // Mobile: slightly slower for clarity
+    u.rate = isFr ? (platform === 'desktop' ? 0.75 : 0.7) : (platform === 'desktop' ? 0.9 : 0.82);
     u.pitch = 1.0;
     if(isFr && frVoice) u.voice = frVoice;
     if(!isFr && enVoice) u.voice = enVoice;
